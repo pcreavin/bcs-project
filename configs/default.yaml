@@ -1,0 +1,10 @@
+data:
+  manifest: data/manifest.csv
+  img_size: 320
+model:
+  backbone: efficientnet_b0
+train:
+  batch_size: 32
+  epochs: 10
+  lr: 3e-4
+  loss: ce_label_smoothing  # or ce_class_weighted
