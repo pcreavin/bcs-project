@@ -1,10 +1,10 @@
 data:
-  manifest: data/manifest.csv
+  train: data/train.csv
+  val: data/val.csv
   img_size: 320
 model:
   backbone: efficientnet_b0
 train:
   batch_size: 32
-  epochs: 10
+  epochs: 2     # keep tiny for the first smoke run
   lr: 3e-4
-  loss: ce_label_smoothing  # or ce_class_weighted
