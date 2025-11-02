@@ -1,0 +1,38 @@
+data:
+  train: data/train.csv
+  val: data/val.csv
+  img_size: 224
+  do_aug: false
+
+model:
+  backbone: efficientnet_b0
+  num_classes: 5
+  pretrained: false  # No pretrained weights
+  finetune_mode: scratch  # Train from scratch
+
+train:
+  batch_size: 32
+  epochs: 20
+  lr: 3e-4
+  seed: 42
+  num_workers: 2
+  device: mps
+  prefetch_factor: 2
+  persistent_workers: true
+  optimizer: adamw
+  weight_decay: 1e-4
+  scheduler: null
+  label_smoothing: 0.05
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: val_macro_f1
+    mode: max
+
+eval:
+  save_confusion_matrix: true
+  save_per_class_metrics: true
+  class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
+
+exp_name: ablation_scratch
+

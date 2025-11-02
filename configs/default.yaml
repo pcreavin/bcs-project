@@ -1,10 +1,44 @@
 data:
   train: data/train.csv
   val: data/val.csv
-  img_size: 320
+  img_size: 224
+  do_aug: false
+
 model:
   backbone: efficientnet_b0
+  num_classes: 5
+  pretrained: true
+  finetune_mode: full  # Options: "head_only", "last_block", "full", "scratch"
+
 train:
   batch_size: 32
-  epochs: 2     # keep tiny for the first smoke run
+  epochs: 20  # Increased for early stopping
   lr: 3e-4
+  seed: 42
+  num_workers: 2
+  device: mps  # Options: "cpu", "cuda", "mps", or null for auto-detect
+  prefetch_factor: 2
+  persistent_workers: true
+  
+  # Optimizer settings
+  optimizer: adamw  # Options: "adamw", "adam", "sgd"
+  weight_decay: 1e-4
+  
+  # Scheduler (optional)
+  scheduler: null  # Options: "cosine", "step", or null
+  
+  # Loss function
+  label_smoothing: 0.05
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: val_macro_f1  # Options: "val_acc", "val_macro_f1", "val_underweight_recall"
+    mode: max  # "max" or "min"
+
+# Evaluation settings
+eval:
+  save_confusion_matrix: true
+  save_per_class_metrics: true
+  class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]  # BCS values
