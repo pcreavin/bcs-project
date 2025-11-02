@@ -1,8 +1,17 @@
-## 2025-10-06 — Dataset split v1
+## 2025-01-XX — Dataset split v2 (Train/Val/Test)
 - From: data/manifest.csv (53,566 rows)
-- Split: 80/20 stratified by `bcs_5class`, seed=42
+- Split: 70/15/15 stratified by `bcs_5class`, seed=42
+- Files: 
+  - data/train.csv (37,496 samples, 70%)
+  - data/val.csv (8,035 samples, 15%) - used for model selection during training
+  - data/test.csv (8,035 samples, 15%) - held out for final evaluation only
+- Script: `scripts/split_manifest_3way.py`
+- Note: Test set should only be evaluated on final chosen model(s) using `scripts/evaluate_test.py`
+
+## 2025-10-06 — Dataset split v1 (deprecated)
+- Split: 80/20 (train/val only)
 - Files: data/train.csv (42,852), data/val.csv (10,714)
-- Note: Keep these CSVs versioned for reproducibility.
+- Note: Replaced by v2 with separate test set.
 
 ## 2025-10-06 — E1 Baseline (smoke)
 Data: train.csv / val.csv (v1), img=320

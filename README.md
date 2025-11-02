@@ -11,7 +11,10 @@ This project uses transfer learning with EfficientNet to classify dairy cattle b
 - **Source**: ScienceDB dairy BCS dataset
 - **Labels**: 5 BCS bins (3.25, 3.5, 3.75, 4.0, 4.25)
 - **Format**: Images with XML bounding boxes for ROI cropping
-- **Splits**: Stratified train/val split (seed=42)
+- **Splits**: Stratified 70/15/15 train/val/test split (seed=42)
+  - **Train**: 37,496 samples (70%) - used for training
+  - **Validation**: 8,035 samples (15%) - used for model selection, early stopping
+  - **Test**: 8,035 samples (15%) - held out for final evaluation only
 
 ## Quick Start
 
@@ -43,6 +46,16 @@ bash scripts/run_ablation.sh
 
 ```bash
 python scripts/compare_ablation.py
+```
+
+### Evaluating on Test Set
+
+After selecting your best model, evaluate on the held-out test set:
+
+```bash
+python scripts/evaluate_test.py \
+  --checkpoint outputs/ablation_full/best_model.pt \
+  --config outputs/ablation_full/config.yaml
 ```
 
 ## Project Structure
