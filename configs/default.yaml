@@ -16,7 +16,7 @@ train:
   lr: 3e-4
   seed: 42
   num_workers: 2
-  device: mps  # Options: "cpu", "cuda", "mps", or null for auto-detect
+  device: null  # Options: "cpu", "cuda", "mps", or null for auto-detect
   prefetch_factor: 2
   persistent_workers: true
   
