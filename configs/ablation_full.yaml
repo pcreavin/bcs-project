@@ -1,8 +1,9 @@
 data:
-  train: data/train.csv
-  val: data/val.csv
+  train: data/processed_224/train_processed.csv
+  val: data/processed_224/val_processed.csv
   img_size: 224
   do_aug: false
+  skip_resize: true  # Images already preprocessed to 224x224
 
 model:
   backbone: efficientnet_b0

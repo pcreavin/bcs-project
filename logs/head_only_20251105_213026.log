@@ -1,0 +1,551 @@
+============================================================
+Training Configuration
+============================================================
+Config: configs/ablation_head_only.yaml
+Device: mps | Batch size: 32 | Epochs: 20
+Backbone: efficientnet_b0 | Finetune mode: head_only
+Pretrained: True | Learning rate: 0.0003
+Early stopping: True (patience=5, monitor=val_macro_f1)
+Output directory: outputs/ablation_head_only
+============================================================
+
+Building datasets...
+Train samples: 37496 | Val samples: 8035
+
+Creating model...
+Model created: 6,405/4,013,953 parameters trainable (0.2%)
+
+Starting training...
+------------------------------------------------------------
+  Epoch 01 | Step   50 | Loss: 2.9049
+  Epoch 01 | Step  100 | Loss: 3.5877
+  Epoch 01 | Step  150 | Loss: 3.2795
+  Epoch 01 | Step  200 | Loss: 2.3039
+  Epoch 01 | Step  250 | Loss: 2.5850
+  Epoch 01 | Step  300 | Loss: 2.4745
+  Epoch 01 | Step  350 | Loss: 3.0846
+  Epoch 01 | Step  400 | Loss: 3.0490
+  Epoch 01 | Step  450 | Loss: 2.7906
+  Epoch 01 | Step  500 | Loss: 1.5660
+  Epoch 01 | Step  550 | Loss: 3.4114
+  Epoch 01 | Step  600 | Loss: 2.1434
+  Epoch 01 | Step  650 | Loss: 2.1392
+  Epoch 01 | Step  700 | Loss: 2.8441
+  Epoch 01 | Step  750 | Loss: 2.0871
+  Epoch 01 | Step  800 | Loss: 2.3553
+  Epoch 01 | Step  850 | Loss: 2.6265
+  Epoch 01 | Step  900 | Loss: 2.0474
+  Epoch 01 | Step  950 | Loss: 1.8635
+  Epoch 01 | Step 1000 | Loss: 1.9900
+  Epoch 01 | Step 1050 | Loss: 2.4325
+  Epoch 01 | Step 1100 | Loss: 2.4663
+  Epoch 01 | Step 1150 | Loss: 2.1284
+Epoch 01 | Train Loss: 2.7247 | Val Acc: 0.2599 | Val Macro-F1: 0.2506 | Underweight Recall: 0.2292
+  -> New best model saved (Macro-F1: 0.2506)
+------------------------------------------------------------
+  Epoch 02 | Step   50 | Loss: 2.2461
+  Epoch 02 | Step  100 | Loss: 2.6815
+  Epoch 02 | Step  150 | Loss: 1.7946
+  Epoch 02 | Step  200 | Loss: 2.1741
+  Epoch 02 | Step  250 | Loss: 2.5801
+  Epoch 02 | Step  300 | Loss: 2.3772
+  Epoch 02 | Step  350 | Loss: 2.6413
+  Epoch 02 | Step  400 | Loss: 3.0049
+  Epoch 02 | Step  450 | Loss: 1.9644
+  Epoch 02 | Step  500 | Loss: 2.3730
+  Epoch 02 | Step  550 | Loss: 2.2166
+  Epoch 02 | Step  600 | Loss: 2.5635
+  Epoch 02 | Step  650 | Loss: 1.9633
+  Epoch 02 | Step  700 | Loss: 2.1613
+  Epoch 02 | Step  750 | Loss: 1.8727
+  Epoch 02 | Step  800 | Loss: 2.4073
+  Epoch 02 | Step  850 | Loss: 1.9429
+  Epoch 02 | Step  900 | Loss: 2.4822
+  Epoch 02 | Step  950 | Loss: 1.8280
+  Epoch 02 | Step 1000 | Loss: 1.8200
+  Epoch 02 | Step 1050 | Loss: 2.4593
+  Epoch 02 | Step 1100 | Loss: 2.3952
+  Epoch 02 | Step 1150 | Loss: 2.3512
+Epoch 02 | Train Loss: 2.2456 | Val Acc: 0.2866 | Val Macro-F1: 0.2790 | Underweight Recall: 0.2478
+  -> New best model saved (Macro-F1: 0.2790)
+------------------------------------------------------------
+  Epoch 03 | Step   50 | Loss: 1.8831
+  Epoch 03 | Step  100 | Loss: 2.0714
+  Epoch 03 | Step  150 | Loss: 2.6979
+  Epoch 03 | Step  200 | Loss: 2.2523
+  Epoch 03 | Step  250 | Loss: 2.6432
+  Epoch 03 | Step  300 | Loss: 2.1008
+  Epoch 03 | Step  350 | Loss: 1.8616
+  Epoch 03 | Step  400 | Loss: 2.4687
+  Epoch 03 | Step  450 | Loss: 1.9526
+  Epoch 03 | Step  500 | Loss: 2.0672
+  Epoch 03 | Step  550 | Loss: 1.7209
+  Epoch 03 | Step  600 | Loss: 2.4516
+  Epoch 03 | Step  650 | Loss: 2.2610
+  Epoch 03 | Step  700 | Loss: 2.0450
+  Epoch 03 | Step  750 | Loss: 1.7419
+  Epoch 03 | Step  800 | Loss: 2.0938
+  Epoch 03 | Step  850 | Loss: 2.4694
+  Epoch 03 | Step  900 | Loss: 1.9818
+  Epoch 03 | Step  950 | Loss: 2.0736
+  Epoch 03 | Step 1000 | Loss: 2.1687
+  Epoch 03 | Step 1050 | Loss: 2.1624
+  Epoch 03 | Step 1100 | Loss: 1.8737
+  Epoch 03 | Step 1150 | Loss: 1.9741
+Epoch 03 | Train Loss: 2.0235 | Val Acc: 0.3009 | Val Macro-F1: 0.2940 | Underweight Recall: 0.2628
+  -> New best model saved (Macro-F1: 0.2940)
+------------------------------------------------------------
+  Epoch 04 | Step   50 | Loss: 2.1433
+  Epoch 04 | Step  100 | Loss: 1.7634
+  Epoch 04 | Step  150 | Loss: 1.7346
+  Epoch 04 | Step  200 | Loss: 1.6324
+  Epoch 04 | Step  250 | Loss: 2.3106
+  Epoch 04 | Step  300 | Loss: 2.1597
+  Epoch 04 | Step  350 | Loss: 1.6323
+  Epoch 04 | Step  400 | Loss: 1.4057
+  Epoch 04 | Step  450 | Loss: 1.8150
+  Epoch 04 | Step  500 | Loss: 1.9090
+  Epoch 04 | Step  550 | Loss: 2.0683
+  Epoch 04 | Step  600 | Loss: 2.0214
+  Epoch 04 | Step  650 | Loss: 2.1393
+  Epoch 04 | Step  700 | Loss: 1.5247
+  Epoch 04 | Step  750 | Loss: 1.8923
+  Epoch 04 | Step  800 | Loss: 2.2257
+  Epoch 04 | Step  850 | Loss: 2.0342
+  Epoch 04 | Step  900 | Loss: 2.0186
+  Epoch 04 | Step  950 | Loss: 2.0410
+  Epoch 04 | Step 1000 | Loss: 2.2026
+  Epoch 04 | Step 1050 | Loss: 1.6405
+  Epoch 04 | Step 1100 | Loss: 2.1538
+  Epoch 04 | Step 1150 | Loss: 1.9185
+Epoch 04 | Train Loss: 1.8813 | Val Acc: 0.3089 | Val Macro-F1: 0.3044 | Underweight Recall: 0.2708
+  -> New best model saved (Macro-F1: 0.3044)
+------------------------------------------------------------
+  Epoch 05 | Step   50 | Loss: 1.7863
+  Epoch 05 | Step  100 | Loss: 1.9118
+  Epoch 05 | Step  150 | Loss: 1.6941
+  Epoch 05 | Step  200 | Loss: 1.5670
+  Epoch 05 | Step  250 | Loss: 1.5449
+  Epoch 05 | Step  300 | Loss: 1.8971
+  Epoch 05 | Step  350 | Loss: 1.8058
+  Epoch 05 | Step  400 | Loss: 2.3281
+  Epoch 05 | Step  450 | Loss: 1.9589
+  Epoch 05 | Step  500 | Loss: 1.9413
+  Epoch 05 | Step  550 | Loss: 1.7271
+  Epoch 05 | Step  600 | Loss: 2.1154
+  Epoch 05 | Step  650 | Loss: 1.4268
+  Epoch 05 | Step  700 | Loss: 1.8997
+  Epoch 05 | Step  750 | Loss: 1.7232
+  Epoch 05 | Step  800 | Loss: 1.9216
+  Epoch 05 | Step  850 | Loss: 1.6752
+  Epoch 05 | Step  900 | Loss: 1.3688
+  Epoch 05 | Step  950 | Loss: 1.7188
+  Epoch 05 | Step 1000 | Loss: 1.6572
+  Epoch 05 | Step 1050 | Loss: 1.6412
+  Epoch 05 | Step 1100 | Loss: 1.3856
+  Epoch 05 | Step 1150 | Loss: 1.9633
+Epoch 05 | Train Loss: 1.7797 | Val Acc: 0.3230 | Val Macro-F1: 0.3173 | Underweight Recall: 0.2743
+  -> New best model saved (Macro-F1: 0.3173)
+------------------------------------------------------------
+  Epoch 06 | Step   50 | Loss: 1.6542
+  Epoch 06 | Step  100 | Loss: 1.5870
+  Epoch 06 | Step  150 | Loss: 1.6532
+  Epoch 06 | Step  200 | Loss: 1.8892
+  Epoch 06 | Step  250 | Loss: 2.0814
+  Epoch 06 | Step  300 | Loss: 1.5959
+  Epoch 06 | Step  350 | Loss: 1.8099
+  Epoch 06 | Step  400 | Loss: 2.0007
+  Epoch 06 | Step  450 | Loss: 1.6765
+  Epoch 06 | Step  500 | Loss: 1.6151
+  Epoch 06 | Step  550 | Loss: 1.6594
+  Epoch 06 | Step  600 | Loss: 1.9581
+  Epoch 06 | Step  650 | Loss: 1.8249
+  Epoch 06 | Step  700 | Loss: 1.4602
+  Epoch 06 | Step  750 | Loss: 1.7531
+  Epoch 06 | Step  800 | Loss: 1.5359
+  Epoch 06 | Step  850 | Loss: 1.8560
+  Epoch 06 | Step  900 | Loss: 1.7997
+  Epoch 06 | Step  950 | Loss: 1.4331
+  Epoch 06 | Step 1000 | Loss: 1.5660
+  Epoch 06 | Step 1050 | Loss: 1.6414
+  Epoch 06 | Step 1100 | Loss: 2.0969
+  Epoch 06 | Step 1150 | Loss: 1.5600
+Epoch 06 | Train Loss: 1.7007 | Val Acc: 0.3344 | Val Macro-F1: 0.3290 | Underweight Recall: 0.3212
+  -> New best model saved (Macro-F1: 0.3290)
+------------------------------------------------------------
+  Epoch 07 | Step   50 | Loss: 1.4989
+  Epoch 07 | Step  100 | Loss: 1.5405
+  Epoch 07 | Step  150 | Loss: 1.7546
+  Epoch 07 | Step  200 | Loss: 1.5565
+  Epoch 07 | Step  250 | Loss: 1.6746
+  Epoch 07 | Step  300 | Loss: 1.4844
+  Epoch 07 | Step  350 | Loss: 1.5124
+  Epoch 07 | Step  400 | Loss: 1.7210
+  Epoch 07 | Step  450 | Loss: 1.4026
+  Epoch 07 | Step  500 | Loss: 1.9026
+  Epoch 07 | Step  550 | Loss: 1.4490
+  Epoch 07 | Step  600 | Loss: 1.4776
+  Epoch 07 | Step  650 | Loss: 1.5123
+  Epoch 07 | Step  700 | Loss: 1.5064
+  Epoch 07 | Step  750 | Loss: 1.7498
+  Epoch 07 | Step  800 | Loss: 1.6060
+  Epoch 07 | Step  850 | Loss: 1.7071
+  Epoch 07 | Step  900 | Loss: 1.4291
+  Epoch 07 | Step  950 | Loss: 1.7946
+  Epoch 07 | Step 1000 | Loss: 1.3889
+  Epoch 07 | Step 1050 | Loss: 1.8971
+  Epoch 07 | Step 1100 | Loss: 1.9463
+  Epoch 07 | Step 1150 | Loss: 1.9263
+Epoch 07 | Train Loss: 1.6395 | Val Acc: 0.3398 | Val Macro-F1: 0.3342 | Underweight Recall: 0.3239
+  -> New best model saved (Macro-F1: 0.3342)
+------------------------------------------------------------
+  Epoch 08 | Step   50 | Loss: 1.4218
+  Epoch 08 | Step  100 | Loss: 1.6223
+  Epoch 08 | Step  150 | Loss: 1.2698
+  Epoch 08 | Step  200 | Loss: 1.6368
+  Epoch 08 | Step  250 | Loss: 1.6294
+  Epoch 08 | Step  300 | Loss: 1.3281
+  Epoch 08 | Step  350 | Loss: 1.4324
+  Epoch 08 | Step  400 | Loss: 1.6409
+  Epoch 08 | Step  450 | Loss: 1.3154
+  Epoch 08 | Step  500 | Loss: 1.4924
+  Epoch 08 | Step  550 | Loss: 1.6736
+  Epoch 08 | Step  600 | Loss: 1.5985
+  Epoch 08 | Step  650 | Loss: 1.6085
+  Epoch 08 | Step  700 | Loss: 1.5873
+  Epoch 08 | Step  750 | Loss: 1.4594
+  Epoch 08 | Step  800 | Loss: 1.3559
+  Epoch 08 | Step  850 | Loss: 1.7767
+  Epoch 08 | Step  900 | Loss: 1.7711
+  Epoch 08 | Step  950 | Loss: 1.6220
+  Epoch 08 | Step 1000 | Loss: 1.4066
+  Epoch 08 | Step 1050 | Loss: 1.7115
+  Epoch 08 | Step 1100 | Loss: 1.7898
+  Epoch 08 | Step 1150 | Loss: 1.7229
+Epoch 08 | Train Loss: 1.5832 | Val Acc: 0.3486 | Val Macro-F1: 0.3456 | Underweight Recall: 0.3142
+  -> New best model saved (Macro-F1: 0.3456)
+------------------------------------------------------------
+  Epoch 09 | Step   50 | Loss: 1.4584
+  Epoch 09 | Step  100 | Loss: 1.7353
+  Epoch 09 | Step  150 | Loss: 1.4341
+  Epoch 09 | Step  200 | Loss: 1.3862
+  Epoch 09 | Step  250 | Loss: 1.5168
+  Epoch 09 | Step  300 | Loss: 1.3328
+  Epoch 09 | Step  350 | Loss: 1.6837
+  Epoch 09 | Step  400 | Loss: 1.8229
+  Epoch 09 | Step  450 | Loss: 1.4705
+  Epoch 09 | Step  500 | Loss: 1.9995
+  Epoch 09 | Step  550 | Loss: 1.4396
+  Epoch 09 | Step  600 | Loss: 1.3766
+  Epoch 09 | Step  650 | Loss: 1.4082
+  Epoch 09 | Step  700 | Loss: 1.3965
+  Epoch 09 | Step  750 | Loss: 1.6705
+  Epoch 09 | Step  800 | Loss: 1.5649
+  Epoch 09 | Step  850 | Loss: 1.3783
+  Epoch 09 | Step  900 | Loss: 1.5585
+  Epoch 09 | Step  950 | Loss: 1.2421
+  Epoch 09 | Step 1000 | Loss: 1.5958
+  Epoch 09 | Step 1050 | Loss: 1.2660
+  Epoch 09 | Step 1100 | Loss: 1.5577
+  Epoch 09 | Step 1150 | Loss: 1.6624
+Epoch 09 | Train Loss: 1.5379 | Val Acc: 0.3549 | Val Macro-F1: 0.3544 | Underweight Recall: 0.3779
+  -> New best model saved (Macro-F1: 0.3544)
+------------------------------------------------------------
+  Epoch 10 | Step   50 | Loss: 1.3647
+  Epoch 10 | Step  100 | Loss: 1.4328
+  Epoch 10 | Step  150 | Loss: 1.4697
+  Epoch 10 | Step  200 | Loss: 1.4868
+  Epoch 10 | Step  250 | Loss: 1.5102
+  Epoch 10 | Step  300 | Loss: 1.7452
+  Epoch 10 | Step  350 | Loss: 1.6878
+  Epoch 10 | Step  400 | Loss: 1.6611
+  Epoch 10 | Step  450 | Loss: 1.5240
+  Epoch 10 | Step  500 | Loss: 1.5939
+  Epoch 10 | Step  550 | Loss: 1.6729
+  Epoch 10 | Step  600 | Loss: 1.6848
+  Epoch 10 | Step  650 | Loss: 1.4264
+  Epoch 10 | Step  700 | Loss: 1.5546
+  Epoch 10 | Step  750 | Loss: 1.5328
+  Epoch 10 | Step  800 | Loss: 1.7246
+  Epoch 10 | Step  850 | Loss: 1.4042
+  Epoch 10 | Step  900 | Loss: 1.5328
+  Epoch 10 | Step  950 | Loss: 1.3616
+  Epoch 10 | Step 1000 | Loss: 1.5074
+  Epoch 10 | Step 1050 | Loss: 1.3142
+  Epoch 10 | Step 1100 | Loss: 1.6801
+  Epoch 10 | Step 1150 | Loss: 1.5313
+Epoch 10 | Train Loss: 1.5061 | Val Acc: 0.3589 | Val Macro-F1: 0.3540 | Underweight Recall: 0.3319
+------------------------------------------------------------
+  Epoch 11 | Step   50 | Loss: 1.5403
+  Epoch 11 | Step  100 | Loss: 1.4500
+  Epoch 11 | Step  150 | Loss: 1.6928
+  Epoch 11 | Step  200 | Loss: 1.6635
+  Epoch 11 | Step  250 | Loss: 1.2883
+  Epoch 11 | Step  300 | Loss: 1.6951
+  Epoch 11 | Step  350 | Loss: 1.6421
+  Epoch 11 | Step  400 | Loss: 1.2368
+  Epoch 11 | Step  450 | Loss: 1.7264
+  Epoch 11 | Step  500 | Loss: 1.6602
+  Epoch 11 | Step  550 | Loss: 1.3703
+  Epoch 11 | Step  600 | Loss: 1.6175
+  Epoch 11 | Step  650 | Loss: 1.4935
+  Epoch 11 | Step  700 | Loss: 1.9272
+  Epoch 11 | Step  750 | Loss: 1.5470
+  Epoch 11 | Step  800 | Loss: 1.5945
+  Epoch 11 | Step  850 | Loss: 1.5446
+  Epoch 11 | Step  900 | Loss: 1.5920
+  Epoch 11 | Step  950 | Loss: 1.3782
+  Epoch 11 | Step 1000 | Loss: 1.6258
+  Epoch 11 | Step 1050 | Loss: 1.6032
+  Epoch 11 | Step 1100 | Loss: 1.4783
+  Epoch 11 | Step 1150 | Loss: 1.4227
+Epoch 11 | Train Loss: 1.4760 | Val Acc: 0.3658 | Val Macro-F1: 0.3623 | Underweight Recall: 0.3522
+  -> New best model saved (Macro-F1: 0.3623)
+------------------------------------------------------------
+  Epoch 12 | Step   50 | Loss: 1.4986
+  Epoch 12 | Step  100 | Loss: 1.4729
+  Epoch 12 | Step  150 | Loss: 1.4391
+  Epoch 12 | Step  200 | Loss: 1.3715
+  Epoch 12 | Step  250 | Loss: 1.4617
+  Epoch 12 | Step  300 | Loss: 1.4585
+  Epoch 12 | Step  350 | Loss: 1.6656
+  Epoch 12 | Step  400 | Loss: 1.6567
+  Epoch 12 | Step  450 | Loss: 1.4584
+  Epoch 12 | Step  500 | Loss: 1.4499
+  Epoch 12 | Step  550 | Loss: 1.4250
+  Epoch 12 | Step  600 | Loss: 1.3774
+  Epoch 12 | Step  650 | Loss: 1.4312
+  Epoch 12 | Step  700 | Loss: 1.3770
+  Epoch 12 | Step  750 | Loss: 1.6842
+  Epoch 12 | Step  800 | Loss: 1.4812
+  Epoch 12 | Step  850 | Loss: 1.3238
+  Epoch 12 | Step  900 | Loss: 1.5973
+  Epoch 12 | Step  950 | Loss: 1.4382
+  Epoch 12 | Step 1000 | Loss: 1.7350
+  Epoch 12 | Step 1050 | Loss: 1.4272
+  Epoch 12 | Step 1100 | Loss: 1.5600
+  Epoch 12 | Step 1150 | Loss: 1.6331
+Epoch 12 | Train Loss: 1.4521 | Val Acc: 0.3782 | Val Macro-F1: 0.3753 | Underweight Recall: 0.4053
+  -> New best model saved (Macro-F1: 0.3753)
+------------------------------------------------------------
+  Epoch 13 | Step   50 | Loss: 1.6217
+  Epoch 13 | Step  100 | Loss: 1.6069
+  Epoch 13 | Step  150 | Loss: 1.2902
+  Epoch 13 | Step  200 | Loss: 1.5757
+  Epoch 13 | Step  250 | Loss: 1.7399
+  Epoch 13 | Step  300 | Loss: 1.4187
+  Epoch 13 | Step  350 | Loss: 1.5068
+  Epoch 13 | Step  400 | Loss: 1.3852
+  Epoch 13 | Step  450 | Loss: 1.6587
+  Epoch 13 | Step  500 | Loss: 1.4525
+  Epoch 13 | Step  550 | Loss: 1.5284
+  Epoch 13 | Step  600 | Loss: 1.4666
+  Epoch 13 | Step  650 | Loss: 1.4463
+  Epoch 13 | Step  700 | Loss: 1.3710
+  Epoch 13 | Step  750 | Loss: 1.9341
+  Epoch 13 | Step  800 | Loss: 1.3263
+  Epoch 13 | Step  850 | Loss: 1.5378
+  Epoch 13 | Step  900 | Loss: 1.4403
+  Epoch 13 | Step  950 | Loss: 1.4159
+  Epoch 13 | Step 1000 | Loss: 1.5676
+  Epoch 13 | Step 1050 | Loss: 1.6538
+  Epoch 13 | Step 1100 | Loss: 1.3100
+  Epoch 13 | Step 1150 | Loss: 1.5228
+Epoch 13 | Train Loss: 1.4298 | Val Acc: 0.3834 | Val Macro-F1: 0.3807 | Underweight Recall: 0.3850
+  -> New best model saved (Macro-F1: 0.3807)
+------------------------------------------------------------
+  Epoch 14 | Step   50 | Loss: 1.1628
+  Epoch 14 | Step  100 | Loss: 1.4172
+  Epoch 14 | Step  150 | Loss: 1.4301
+  Epoch 14 | Step  200 | Loss: 1.6622
+  Epoch 14 | Step  250 | Loss: 1.5355
+  Epoch 14 | Step  300 | Loss: 1.4174
+  Epoch 14 | Step  350 | Loss: 1.3390
+  Epoch 14 | Step  400 | Loss: 1.3460
+  Epoch 14 | Step  450 | Loss: 1.5504
+  Epoch 14 | Step  500 | Loss: 1.4166
+  Epoch 14 | Step  550 | Loss: 1.3932
+  Epoch 14 | Step  600 | Loss: 1.7355
+  Epoch 14 | Step  650 | Loss: 1.2202
+  Epoch 14 | Step  700 | Loss: 1.3359
+  Epoch 14 | Step  750 | Loss: 1.5417
+  Epoch 14 | Step  800 | Loss: 1.2927
+  Epoch 14 | Step  850 | Loss: 1.4295
+  Epoch 14 | Step  900 | Loss: 1.4198
+  Epoch 14 | Step  950 | Loss: 1.7404
+  Epoch 14 | Step 1000 | Loss: 1.3042
+  Epoch 14 | Step 1050 | Loss: 1.0906
+  Epoch 14 | Step 1100 | Loss: 1.1765
+  Epoch 14 | Step 1150 | Loss: 1.6385
+Epoch 14 | Train Loss: 1.4084 | Val Acc: 0.3861 | Val Macro-F1: 0.3848 | Underweight Recall: 0.3681
+  -> New best model saved (Macro-F1: 0.3848)
+------------------------------------------------------------
+  Epoch 15 | Step   50 | Loss: 1.4619
+  Epoch 15 | Step  100 | Loss: 1.4574
+  Epoch 15 | Step  150 | Loss: 1.7790
+  Epoch 15 | Step  200 | Loss: 1.2675
+  Epoch 15 | Step  250 | Loss: 1.2437
+  Epoch 15 | Step  300 | Loss: 1.3039
+  Epoch 15 | Step  350 | Loss: 1.1139
+  Epoch 15 | Step  400 | Loss: 1.3514
+  Epoch 15 | Step  450 | Loss: 1.3777
+  Epoch 15 | Step  500 | Loss: 1.8780
+  Epoch 15 | Step  550 | Loss: 1.2177
+  Epoch 15 | Step  600 | Loss: 1.1757
+  Epoch 15 | Step  650 | Loss: 1.2097
+  Epoch 15 | Step  700 | Loss: 1.5736
+  Epoch 15 | Step  750 | Loss: 1.2364
+  Epoch 15 | Step  800 | Loss: 1.1440
+  Epoch 15 | Step  850 | Loss: 1.2659
+  Epoch 15 | Step  900 | Loss: 1.4747
+  Epoch 15 | Step  950 | Loss: 1.3777
+  Epoch 15 | Step 1000 | Loss: 1.4175
+  Epoch 15 | Step 1050 | Loss: 1.4299
+  Epoch 15 | Step 1100 | Loss: 1.2074
+  Epoch 15 | Step 1150 | Loss: 1.3341
+Epoch 15 | Train Loss: 1.3933 | Val Acc: 0.3917 | Val Macro-F1: 0.3919 | Underweight Recall: 0.4212
+  -> New best model saved (Macro-F1: 0.3919)
+------------------------------------------------------------
+  Epoch 16 | Step   50 | Loss: 1.3834
+  Epoch 16 | Step  100 | Loss: 1.6985
+  Epoch 16 | Step  150 | Loss: 1.5650
+  Epoch 16 | Step  200 | Loss: 1.5920
+  Epoch 16 | Step  250 | Loss: 1.2130
+  Epoch 16 | Step  300 | Loss: 1.4109
+  Epoch 16 | Step  350 | Loss: 1.3282
+  Epoch 16 | Step  400 | Loss: 1.4908
+  Epoch 16 | Step  450 | Loss: 1.5600
+  Epoch 16 | Step  500 | Loss: 1.3875
+  Epoch 16 | Step  550 | Loss: 1.4141
+  Epoch 16 | Step  600 | Loss: 1.1793
+  Epoch 16 | Step  650 | Loss: 1.4724
+  Epoch 16 | Step  700 | Loss: 1.1931
+  Epoch 16 | Step  750 | Loss: 1.5193
+  Epoch 16 | Step  800 | Loss: 1.3140
+  Epoch 16 | Step  850 | Loss: 1.4490
+  Epoch 16 | Step  900 | Loss: 1.3682
+  Epoch 16 | Step  950 | Loss: 1.6366
+  Epoch 16 | Step 1000 | Loss: 1.4718
+  Epoch 16 | Step 1050 | Loss: 1.4370
+  Epoch 16 | Step 1100 | Loss: 1.5136
+  Epoch 16 | Step 1150 | Loss: 1.1819
+Epoch 16 | Train Loss: 1.3795 | Val Acc: 0.3944 | Val Macro-F1: 0.3936 | Underweight Recall: 0.4018
+  -> New best model saved (Macro-F1: 0.3936)
+------------------------------------------------------------
+  Epoch 17 | Step   50 | Loss: 1.3500
+  Epoch 17 | Step  100 | Loss: 1.5631
+  Epoch 17 | Step  150 | Loss: 1.5733
+  Epoch 17 | Step  200 | Loss: 1.4106
+  Epoch 17 | Step  250 | Loss: 1.3517
+  Epoch 17 | Step  300 | Loss: 1.4034
+  Epoch 17 | Step  350 | Loss: 1.2631
+  Epoch 17 | Step  400 | Loss: 1.4547
+  Epoch 17 | Step  450 | Loss: 1.3607
+  Epoch 17 | Step  500 | Loss: 1.4473
+  Epoch 17 | Step  550 | Loss: 1.2788
+  Epoch 17 | Step  600 | Loss: 1.2725
+  Epoch 17 | Step  650 | Loss: 1.3422
+  Epoch 17 | Step  700 | Loss: 1.4246
+  Epoch 17 | Step  750 | Loss: 1.6113
+  Epoch 17 | Step  800 | Loss: 1.2633
+  Epoch 17 | Step  850 | Loss: 1.3783
+  Epoch 17 | Step  900 | Loss: 1.3694
+  Epoch 17 | Step  950 | Loss: 1.2400
+  Epoch 17 | Step 1000 | Loss: 1.4006
+  Epoch 17 | Step 1050 | Loss: 1.3594
+  Epoch 17 | Step 1100 | Loss: 1.3566
+  Epoch 17 | Step 1150 | Loss: 1.2272
+Epoch 17 | Train Loss: 1.3697 | Val Acc: 0.3988 | Val Macro-F1: 0.4011 | Underweight Recall: 0.4195
+  -> New best model saved (Macro-F1: 0.4011)
+------------------------------------------------------------
+  Epoch 18 | Step   50 | Loss: 1.4363
+  Epoch 18 | Step  100 | Loss: 1.5575
+  Epoch 18 | Step  150 | Loss: 1.3218
+  Epoch 18 | Step  200 | Loss: 1.3856
+  Epoch 18 | Step  250 | Loss: 1.1910
+  Epoch 18 | Step  300 | Loss: 1.3232
+  Epoch 18 | Step  350 | Loss: 1.2652
+  Epoch 18 | Step  400 | Loss: 1.3915
+  Epoch 18 | Step  450 | Loss: 1.4343
+  Epoch 18 | Step  500 | Loss: 1.5118
+  Epoch 18 | Step  550 | Loss: 1.2848
+  Epoch 18 | Step  600 | Loss: 1.4920
+  Epoch 18 | Step  650 | Loss: 1.4044
+  Epoch 18 | Step  700 | Loss: 1.4592
+  Epoch 18 | Step  750 | Loss: 1.4405
+  Epoch 18 | Step  800 | Loss: 1.3800
+  Epoch 18 | Step  850 | Loss: 1.2288
+  Epoch 18 | Step  900 | Loss: 1.3496
+  Epoch 18 | Step  950 | Loss: 1.4663
+  Epoch 18 | Step 1000 | Loss: 1.4414
+  Epoch 18 | Step 1050 | Loss: 1.3903
+  Epoch 18 | Step 1100 | Loss: 1.6274
+  Epoch 18 | Step 1150 | Loss: 1.2665
+Epoch 18 | Train Loss: 1.3578 | Val Acc: 0.4015 | Val Macro-F1: 0.4015 | Underweight Recall: 0.4204
+  -> New best model saved (Macro-F1: 0.4015)
+------------------------------------------------------------
+  Epoch 19 | Step   50 | Loss: 1.4702
+  Epoch 19 | Step  100 | Loss: 1.2541
+  Epoch 19 | Step  150 | Loss: 1.2444
+  Epoch 19 | Step  200 | Loss: 1.3877
+  Epoch 19 | Step  250 | Loss: 1.2401
+  Epoch 19 | Step  300 | Loss: 1.3717
+  Epoch 19 | Step  350 | Loss: 1.4990
+  Epoch 19 | Step  400 | Loss: 1.2225
+  Epoch 19 | Step  450 | Loss: 1.4157
+  Epoch 19 | Step  500 | Loss: 1.3001
+  Epoch 19 | Step  550 | Loss: 1.2093
+  Epoch 19 | Step  600 | Loss: 1.4301
+  Epoch 19 | Step  650 | Loss: 1.4726
+  Epoch 19 | Step  700 | Loss: 1.4309
+  Epoch 19 | Step  750 | Loss: 1.7111
+  Epoch 19 | Step  800 | Loss: 1.1819
+  Epoch 19 | Step  850 | Loss: 1.2992
+  Epoch 19 | Step  900 | Loss: 1.0083
+  Epoch 19 | Step  950 | Loss: 1.3525
+  Epoch 19 | Step 1000 | Loss: 1.5191
+  Epoch 19 | Step 1050 | Loss: 1.4712
+  Epoch 19 | Step 1100 | Loss: 1.3684
+  Epoch 19 | Step 1150 | Loss: 1.2437
+Epoch 19 | Train Loss: 1.3482 | Val Acc: 0.4073 | Val Macro-F1: 0.4099 | Underweight Recall: 0.4363
+  -> New best model saved (Macro-F1: 0.4099)
+------------------------------------------------------------
+  Epoch 20 | Step   50 | Loss: 1.3563
+  Epoch 20 | Step  100 | Loss: 1.1944
+  Epoch 20 | Step  150 | Loss: 1.2811
+  Epoch 20 | Step  200 | Loss: 1.4099
+  Epoch 20 | Step  250 | Loss: 1.1540
+  Epoch 20 | Step  300 | Loss: 1.3711
+  Epoch 20 | Step  350 | Loss: 1.1629
+  Epoch 20 | Step  400 | Loss: 1.3863
+  Epoch 20 | Step  450 | Loss: 1.3794
+  Epoch 20 | Step  500 | Loss: 1.0907
+  Epoch 20 | Step  550 | Loss: 1.3373
+  Epoch 20 | Step  600 | Loss: 1.1905
+  Epoch 20 | Step  650 | Loss: 1.1953
+  Epoch 20 | Step  700 | Loss: 1.3463
+  Epoch 20 | Step  750 | Loss: 1.3978
+  Epoch 20 | Step  800 | Loss: 1.3493
+  Epoch 20 | Step  850 | Loss: 1.4891
+  Epoch 20 | Step  900 | Loss: 1.2125
+  Epoch 20 | Step  950 | Loss: 1.1920
+  Epoch 20 | Step 1000 | Loss: 1.4036
+  Epoch 20 | Step 1050 | Loss: 1.3140
+  Epoch 20 | Step 1100 | Loss: 1.3524
+  Epoch 20 | Step 1150 | Loss: 1.4889
+Epoch 20 | Train Loss: 1.3422 | Val Acc: 0.4046 | Val Macro-F1: 0.4057 | Underweight Recall: 0.4177
+------------------------------------------------------------
+
+Final evaluation on best model...
+Saved confusion matrix to outputs/ablation_head_only/confusion_matrix.png
+Saved metrics to outputs/ablation_head_only/metrics.json
+
+============================================================
+Training Complete
+============================================================
+Best Val Accuracy: 0.4073
+Best Val Macro-F1: 0.4099
+Best Underweight Recall: 0.4363
+
+Artifacts saved to: outputs/ablation_head_only
+============================================================

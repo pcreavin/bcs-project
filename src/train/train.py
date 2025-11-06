@@ -77,6 +77,7 @@ def main(cfg_path: str):
     val_csv = data_cfg.get("val", "data/val.csv")
     img_size = int(data_cfg.get("img_size", 224))
     do_aug = bool(data_cfg.get("do_aug", False))
+    skip_resize = bool(data_cfg.get("skip_resize", False))  # For preprocessed images
 
     backbone = model_cfg.get("backbone", "efficientnet_b0")
     num_classes = int(model_cfg.get("num_classes", 5))
@@ -123,8 +124,8 @@ def main(cfg_path: str):
 
     # ---------- Data ----------
     print("\nBuilding datasets...")
-    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
-    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
+    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug, skip_resize=skip_resize)
+    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False, skip_resize=skip_resize)
     
     dl_tr = DataLoader(
         ds_tr,

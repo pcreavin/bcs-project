@@ -85,12 +85,53 @@ def create_comparison_table(experiments: Dict[str, pathlib.Path]) -> pd.DataFram
     return pd.DataFrame(rows)
 
 
+def export_to_latex(df: pd.DataFrame, output_path: str, caption: str = "Experiment Comparison", label: str = "tab:comparison"):
+    """
+    Export DataFrame to LaTeX table format.
+    
+    Args:
+        df: DataFrame to export
+        output_path: Path to save LaTeX file
+        caption: Table caption
+        label: LaTeX label for referencing
+    """
+    # Convert string columns that look like numbers back to floats for formatting
+    numeric_cols = ["Accuracy", "Macro-F1", "Weighted-F1", "Underweight Recall"]
+    df_formatted = df.copy()
+    for col in numeric_cols:
+        if col in df_formatted.columns:
+            # Extract numeric value from string if needed
+            if df_formatted[col].dtype == object:
+                df_formatted[col] = df_formatted[col].str.replace(r'[^\d.]', '', regex=True).astype(float)
+    
+    latex_str = df_formatted.to_latex(
+        index=False,
+        float_format="{:.4f}".format,
+        caption=caption,
+        label=label,
+        position="htbp",
+        escape=False,
+        column_format="l" + "c" * (len(df.columns) - 1)  # Left align first column, center rest
+    )
+    
+    with open(output_path, "w") as f:
+        f.write(latex_str)
+    
+    print(f"LaTeX table saved to {output_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compare ablation experiment results")
     parser.add_argument("--output", type=str, default="ablation_comparison.csv",
                         help="Output CSV file path")
     parser.add_argument("--outputs-dir", type=str, default="outputs",
                         help="Directory containing experiment outputs")
+    parser.add_argument("--latex", type=str, default=None,
+                        help="Also export LaTeX table to this file (e.g., results.tex)")
+    parser.add_argument("--latex-caption", type=str, default="Comparison of Transfer Learning Strategies",
+                        help="Caption for LaTeX table")
+    parser.add_argument("--latex-label", type=str, default="tab:ablation_comparison",
+                        help="LaTeX label for table referencing")
     args = parser.parse_args()
     
     print("Finding experiments...")
@@ -114,6 +155,15 @@ def main():
     # Save to CSV
     comparison_df.to_csv(args.output, index=False)
     print(f"\nComparison saved to {args.output}")
+    
+    # Export to LaTeX if requested
+    if args.latex:
+        export_to_latex(
+            comparison_df,
+            args.latex,
+            caption=args.latex_caption,
+            label=args.latex_label
+        )
     
     # Print formatted table
     print("\n" + "=" * 80)

@@ -61,6 +61,10 @@ for jpg in ROOT.rglob("*.jpg"):
     }
     rows.append(row)
 
+# Sort rows by image_path for deterministic ordering
+# This ensures reproducibility across different systems/filesystems
+rows.sort(key=lambda x: x["image_path"])
+
 # write CSV
 with OUT.open("w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=["image_path","bcs_float","bcs_5class","xmin","ymin","xmax","ymax"])
