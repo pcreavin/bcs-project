@@ -18,7 +18,7 @@ from tqdm import tqdm
 import argparse
 
 
-def preprocess_split(csv_path: str, output_dir: pathlib.Path, split_name: str):
+def preprocess_split(csv_path: str, output_dir: pathlib.Path, split_name: str, img_size: int):
     """Preprocess images for one split (train/val/test)."""
     print(f"\nProcessing {split_name} split...")
     df = pd.read_csv(csv_path)
@@ -50,8 +50,8 @@ def preprocess_split(csv_path: str, output_dir: pathlib.Path, split_name: str):
                 # Fall back to full image
                 pass
         
-        # Resize to 224x224
-        img_resized = cv2.resize(img, (224, 224), interpolation=cv2.INTER_AREA)
+        # Resize to img_size x img_size
+        img_resized = cv2.resize(img, (img_size, img_size), interpolation=cv2.INTER_AREA)
         
         # Save preprocessed image
         # Use original filename to preserve uniqueness
@@ -92,6 +92,7 @@ def main():
     parser.add_argument("--val-csv", type=str, default="data/val.csv")
     parser.add_argument("--test-csv", type=str, default="data/test.csv")
     parser.add_argument("--output-dir", type=str, default="data/processed_224")
+    parser.add_argument("--img-size", type=int, default=224, help="Target square size for resized images")
     args = parser.parse_args()
     
     output_base = pathlib.Path(args.output_dir)
@@ -102,15 +103,15 @@ def main():
     print(f"Output directory: {output_base}")
     print("This will:")
     print("  1. Crop ROI from images (if bbox exists)")
-    print("  2. Resize to 224x224")
+    print(f"  2. Resize to {args.img_size}x{args.img_size}")
     print("  3. Save preprocessed images")
     print("  4. Create new CSV files for training")
     print("=" * 60)
     
     # Process each split
-    train_csv = preprocess_split(args.train_csv, output_base / "train", "train")
-    val_csv = preprocess_split(args.val_csv, output_base / "val", "val")
-    test_csv = preprocess_split(args.test_csv, output_base / "test", "test")
+    train_csv = preprocess_split(args.train_csv, output_base / "train", "train", args.img_size)
+    val_csv = preprocess_split(args.val_csv, output_base / "val", "val", args.img_size)
+    test_csv = preprocess_split(args.test_csv, output_base / "test", "test", args.img_size)
     
     print("\n" + "=" * 60)
     print("PREPROCESSING COMPLETE")
@@ -128,6 +129,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 
 
 

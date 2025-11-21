@@ -1,18 +1,18 @@
 data:
-  train: data/processed_224/train_processed.csv
-  val: data/processed_224/val_processed.csv
-  img_size: 224
-  do_aug: true  # Enabled data augmentation (horizontal flip + rotation)
-  skip_resize: true  # Images already preprocessed to 224x224
+  train: data/processed_260/train_processed.csv
+  val: data/processed_260/val_processed.csv
+  img_size: 260  # Native resolution for EfficientNet-B2
+  do_aug: true
+  skip_resize: true
 
 model:
-  backbone: efficientnet_b0
+  backbone: efficientnet_b2
   num_classes: 5
   pretrained: true
-  finetune_mode: full  # Fine-tune all parameters
+  finetune_mode: full
 
 train:
-  batch_size: 32
+  batch_size: 24  # Adjust if memory allows larger batches
   epochs: 20
   lr: 3e-4
   seed: 42
@@ -22,7 +22,7 @@ train:
   persistent_workers: true
   optimizer: adamw
   weight_decay: 1e-4
-  scheduler: cosine  # Cosine annealing learning rate scheduler
+  scheduler: cosine
   label_smoothing: 0.05
   early_stopping:
     enabled: true
@@ -35,9 +35,5 @@ eval:
   save_per_class_metrics: true
   class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
 
-exp_name: ablation_full_enhanced
-
-
-
-
+exp_name: ablation_full_enhanced_b2
 
