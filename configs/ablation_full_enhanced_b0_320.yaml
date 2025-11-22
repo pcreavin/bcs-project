@@ -1,9 +1,9 @@
 data:
-  train: data/processed_224/train_processed.csv
-  val: data/processed_224/val_processed.csv
-  img_size: 224
+  train: data/train.csv  # Use original CSV with bboxes for on-the-fly processing
+  val: data/val.csv
+  img_size: 320  # Higher resolution for better fine-grained classification
   do_aug: true  # Enabled data augmentation (horizontal flip + rotation)
-  skip_resize: true  # Images already preprocessed to 224x224
+  skip_resize: false  # Resize on-the-fly from original images with ROI cropping
 
 model:
   backbone: efficientnet_b0
@@ -17,7 +17,7 @@ train:
   lr: 3e-4
   seed: 42
   num_workers: 2
-  device: mps
+  device: mps  # Change to cuda if on GPU
   prefetch_factor: 2
   persistent_workers: true
   optimizer: adamw
@@ -35,11 +35,5 @@ eval:
   save_per_class_metrics: true
   class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
 
-exp_name: ablation_full_enhanced
-
-
-
-
-
-
+exp_name: ablation_full_enhanced_b0_320
 
