@@ -1,7 +1,7 @@
 data:
-  train: data/processed_260/train_processed.csv
-  val: data/processed_260/val_processed.csv
-  img_size: 260  # Native resolution for EfficientNet-B2
+  train: data/processed_320/train_processed.csv
+  val: data/processed_320/val_processed.csv
+  img_size: 320  # Higher resolution for better fine-grained classification
   do_aug: true
   skip_resize: true
 
@@ -17,7 +17,7 @@ train:
   lr: 3e-4
   seed: 42
   num_workers: 2
-  device: mps
+  device: cuda
   prefetch_factor: 2
   persistent_workers: true
   optimizer: adamw

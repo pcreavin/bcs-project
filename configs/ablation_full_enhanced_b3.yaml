@@ -1,8 +1,9 @@
 data:
-  train: data/train.csv
-  val: data/val.csv
-  img_size: 300  # Native resolution for EfficientNet-B3
+  train: data/processed_320/train_processed.csv
+  val: data/processed_320/val_processed.csv
+  img_size: 320  # Higher resolution for better fine-grained classification
   do_aug: true
+  skip_resize: true  # Preprocessed images already at target size
 
 model:
   backbone: efficientnet_b3
@@ -16,7 +17,7 @@ train:
   lr: 3e-4
   seed: 42
   num_workers: 2
-  device: mps
+  device: cuda
   prefetch_factor: 2
   persistent_workers: true
   optimizer: adamw
