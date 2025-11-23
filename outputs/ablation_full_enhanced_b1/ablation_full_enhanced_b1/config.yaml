@@ -1,0 +1,39 @@
+data:
+  train: data/processed_320/train_processed.csv
+  val: data/processed_320/val_processed.csv
+  img_size: 320  # Higher resolution for better fine-grained classification
+  do_aug: true  # Horizontal flip + ±10° rotation
+  skip_resize: true  # Preprocessed images already at target size
+
+model:
+  backbone: efficientnet_b1
+  num_classes: 5
+  pretrained: true
+  finetune_mode: full
+
+train:
+  batch_size: 32
+  epochs: 20
+  lr: 3e-4
+  seed: 42
+  num_workers: 2
+  device: cuda
+  prefetch_factor: 2
+  persistent_workers: true
+  optimizer: adamw
+  weight_decay: 1e-4
+  scheduler: cosine
+  label_smoothing: 0.05
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: val_macro_f1
+    mode: max
+
+eval:
+  save_confusion_matrix: true
+  save_per_class_metrics: true
+  class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
+
+exp_name: ablation_full_enhanced_b1
+

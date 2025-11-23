@@ -77,8 +77,6 @@ def main(cfg_path: str):
     val_csv = data_cfg.get("val", "data/val.csv")
     img_size = int(data_cfg.get("img_size", 224))
     do_aug = bool(data_cfg.get("do_aug", False))
-    skip_resize = bool(data_cfg.get("skip_resize", False))  # For preprocessed images
-    crop_jitter = float(data_cfg.get("crop_jitter", 0.0))  # Random padding around ROI bbox
 
     backbone = model_cfg.get("backbone", "efficientnet_b0")
     num_classes = int(model_cfg.get("num_classes", 5))
@@ -117,7 +115,6 @@ def main(cfg_path: str):
     print(f"Device: {device} | Batch size: {bs} | Epochs: {epochs}")
     print(f"Backbone: {backbone} | Finetune mode: {finetune_mode}")
     print(f"Pretrained: {pretrained} | Learning rate: {lr}")
-    print(f"Image size: {img_size} | Augmentation: {do_aug} | Crop jitter: {crop_jitter}")
     print(f"Early stopping: {es_enabled} (patience={es_patience}, monitor={es_monitor})")
     print(f"Output directory: {out_dir}")
     print("=" * 60)
@@ -126,8 +123,8 @@ def main(cfg_path: str):
 
     # ---------- Data ----------
     print("\nBuilding datasets...")
-    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug, skip_resize=skip_resize, crop_jitter=crop_jitter)
-    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False, skip_resize=skip_resize, crop_jitter=0.0)  # No jitter for validation
+    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
+    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
     
     dl_tr = DataLoader(
         ds_tr,
