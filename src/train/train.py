@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 from .dataset import BcsDataset
 from .early_stopping import EarlyStopping
 from ..models import create_model
+from ..models.losses import create_ordinal_loss
 from ..eval import evaluate, plot_confusion_matrix
 
 
@@ -82,6 +83,7 @@ def main(cfg_path: str):
     num_classes = int(model_cfg.get("num_classes", 5))
     pretrained = bool(model_cfg.get("pretrained", True))
     finetune_mode = model_cfg.get("finetune_mode", "full")
+    head_type = model_cfg.get("head_type", "classification")  # "classification" or "ordinal"
 
     bs = int(train_cfg.get("batch_size", 32))
     epochs = int(train_cfg.get("epochs", 20))
@@ -113,7 +115,7 @@ def main(cfg_path: str):
     print("=" * 60)
     print(f"Config: {cfg_path}")
     print(f"Device: {device} | Batch size: {bs} | Epochs: {epochs}")
-    print(f"Backbone: {backbone} | Finetune mode: {finetune_mode}")
+    print(f"Backbone: {backbone} | Finetune mode: {finetune_mode} | Head type: {head_type}")
     print(f"Pretrained: {pretrained} | Learning rate: {lr}")
     print(f"Early stopping: {es_enabled} (patience={es_patience}, monitor={es_monitor})")
     print(f"Output directory: {out_dir}")
@@ -150,12 +152,20 @@ def main(cfg_path: str):
         backbone=backbone,
         num_classes=num_classes,
         pretrained=pretrained,
-        finetune_mode=finetune_mode
+        finetune_mode=finetune_mode,
+        head_type=head_type
     )
     model.to(device)
 
     # ---------- Optimizer / Loss / Scheduler ----------
-    criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+    if head_type == "ordinal":
+        # Ordinal regression loss
+        threshold_weights = train_cfg.get("ordinal_threshold_weights", None)
+        criterion = create_ordinal_loss(num_classes, threshold_weights=threshold_weights)
+    else:
+        # Standard classification loss
+        criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+    
     optimizer = get_optimizer(model, optimizer_name, lr, weight_decay)
     scheduler = get_scheduler(optimizer, scheduler_name, epochs)
 
@@ -203,7 +213,7 @@ def main(cfg_path: str):
         train_loss = running_loss / max(1, num_steps)
 
         # Validation phase
-        eval_results = evaluate(model, dl_va, device, class_names=class_names)
+        eval_results = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type)
         
         # Get monitored metric for early stopping
         if es_monitor == "val_acc":
@@ -246,7 +256,7 @@ def main(cfg_path: str):
     # ---------- Final Evaluation and Saving ----------
     print("\nFinal evaluation on best model...")
     model.load_state_dict(torch.load(os.path.join(out_dir, "best_model.pt")))
-    final_eval = evaluate(model, dl_va, device, class_names=class_names)
+    final_eval = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type)
     
     # Save confusion matrix
     if eval_cfg.get("save_confusion_matrix", True):

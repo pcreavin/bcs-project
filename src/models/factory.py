@@ -1,14 +1,16 @@
 """Model factory for creating models with different transfer learning strategies."""
 import torch.nn as nn
 import timm
-from typing import Literal
+from typing import Literal, Optional
+from .heads import OrdinalHead
 
 
 def create_model(
     backbone: str,
     num_classes: int,
     pretrained: bool = True,
-    finetune_mode: Literal["head_only", "last_block", "full", "scratch"] = "full"
+    finetune_mode: Literal["head_only", "last_block", "full", "scratch"] = "full",
+    head_type: Literal["classification", "ordinal"] = "classification"
 ) -> nn.Module:
     """
     Create model with specified transfer learning strategy.
@@ -22,6 +24,9 @@ def create_model(
             - "head_only": Freeze backbone, train only classifier head
             - "last_block": Freeze early layers, unfreeze last block(s)
             - "full": Fine-tune all parameters
+        head_type: Type of prediction head
+            - "classification": Standard classification head (num_classes outputs)
+            - "ordinal": Ordinal regression head (num_classes-1 threshold logits)
     
     Returns:
         Configured model with appropriate parameters frozen/unfrozen
@@ -29,7 +34,49 @@ def create_model(
     if finetune_mode == "scratch":
         pretrained = False
     
-    model = timm.create_model(backbone, pretrained=pretrained, num_classes=num_classes)
+    # Create base model - we'll replace the head if ordinal
+    if head_type == "ordinal":
+        # Create model with classifier first to get feature dimension
+        temp_model = timm.create_model(backbone, pretrained=False, num_classes=num_classes)
+        
+        # Get feature dimension from classifier/head
+        in_features = None
+        if hasattr(temp_model, "classifier"):
+            if isinstance(temp_model.classifier, nn.Linear):
+                in_features = temp_model.classifier.in_features
+            elif isinstance(temp_model.classifier, nn.Sequential):
+                for module in temp_model.classifier:
+                    if isinstance(module, nn.Linear):
+                        in_features = module.in_features
+                        break
+        elif hasattr(temp_model, "head"):
+            if isinstance(temp_model.head, nn.Linear):
+                in_features = temp_model.head.in_features
+            elif isinstance(temp_model.head, nn.Sequential):
+                for module in temp_model.head:
+                    if isinstance(module, nn.Linear):
+                        in_features = module.in_features
+                        break
+        
+        if in_features is None:
+            raise ValueError("Could not determine feature dimension from backbone")
+        
+        # Now create model and replace classifier with ordinal head
+        model = timm.create_model(backbone, pretrained=pretrained, num_classes=num_classes)
+        
+        # Replace classifier/head with ordinal head
+        ordinal_head = OrdinalHead(in_features, num_classes)
+        if hasattr(model, "classifier"):
+            model.classifier = ordinal_head
+        elif hasattr(model, "head"):
+            model.head = ordinal_head
+        else:
+            raise ValueError("Could not find classifier or head attribute in model")
+        
+        del temp_model  # Clean up
+    else:
+        # Standard classification model
+        model = timm.create_model(backbone, pretrained=pretrained, num_classes=num_classes)
     
     if finetune_mode == "head_only":
         # Freeze all layers except classifier
