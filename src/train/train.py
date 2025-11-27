@@ -9,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import traceback
 from torch.utils.data import DataLoader
 
 from .dataset import BcsDataset
@@ -64,9 +65,21 @@ def get_scheduler(optimizer, scheduler_name: str, epochs: int):
 
 def main(cfg_path: str):
     """Main training function."""
-    # ---------- Load config ----------
-    with open(cfg_path, "r") as f:
-        cfg = yaml.safe_load(f)
+    try:
+        # ---------- Load config ----------
+        print(f"Loading config from: {cfg_path}")
+        if not os.path.exists(cfg_path):
+            raise FileNotFoundError(f"Config file not found: {cfg_path}")
+        
+        with open(cfg_path, "r") as f:
+            cfg = yaml.safe_load(f)
+        
+        if cfg is None:
+            raise ValueError(f"Config file is empty or invalid: {cfg_path}")
+    except Exception as e:
+        print(f"ERROR: Failed to load config: {e}")
+        traceback.print_exc()
+        raise
 
     # ---------- Read settings ----------
     data_cfg = cfg.get("data", {})
@@ -125,8 +138,20 @@ def main(cfg_path: str):
 
     # ---------- Data ----------
     print("\nBuilding datasets...")
-    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
-    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
+    try:
+        if not os.path.exists(train_csv):
+            raise FileNotFoundError(f"Train CSV not found: {train_csv}")
+        if not os.path.exists(val_csv):
+            raise FileNotFoundError(f"Val CSV not found: {val_csv}")
+        
+        print(f"  Loading train dataset from: {train_csv}")
+        ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
+        print(f"  Loading val dataset from: {val_csv}")
+        ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
+    except Exception as e:
+        print(f"ERROR: Failed to load datasets: {e}")
+        traceback.print_exc()
+        raise
     
     dl_tr = DataLoader(
         ds_tr,
@@ -148,23 +173,42 @@ def main(cfg_path: str):
 
     # ---------- Model ----------
     print("\nCreating model...")
-    model = create_model(
-        backbone=backbone,
-        num_classes=num_classes,
-        pretrained=pretrained,
-        finetune_mode=finetune_mode,
-        head_type=head_type
-    )
-    model.to(device)
+    try:
+        print(f"  Backbone: {backbone}, Head type: {head_type}, Classes: {num_classes}")
+        model = create_model(
+            backbone=backbone,
+            num_classes=num_classes,
+            pretrained=pretrained,
+            finetune_mode=finetune_mode,
+            head_type=head_type
+        )
+        print(f"  Moving model to device: {device}")
+        model.to(device)
+        print(f"  ✓ Model created successfully")
+    except Exception as e:
+        print(f"ERROR: Failed to create model: {e}")
+        traceback.print_exc()
+        raise
 
     # ---------- Optimizer / Loss / Scheduler ----------
-    if head_type == "ordinal":
-        # Ordinal regression loss
-        threshold_weights = train_cfg.get("ordinal_threshold_weights", None)
-        criterion = create_ordinal_loss(num_classes, threshold_weights=threshold_weights)
-    else:
-        # Standard classification loss
-        criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+    try:
+        if head_type == "ordinal":
+            # Ordinal regression loss
+            print("  Creating ordinal loss...")
+            threshold_weights = train_cfg.get("ordinal_threshold_weights", None)
+            if threshold_weights:
+                print(f"    Using threshold weights: {threshold_weights}")
+            criterion = create_ordinal_loss(num_classes, threshold_weights=threshold_weights)
+            print("  ✓ Ordinal loss created")
+        else:
+            # Standard classification loss
+            print("  Creating classification loss...")
+            criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+            print("  ✓ Classification loss created")
+    except Exception as e:
+        print(f"ERROR: Failed to create loss function: {e}")
+        traceback.print_exc()
+        raise
     
     optimizer = get_optimizer(model, optimizer_name, lr, weight_decay)
     scheduler = get_scheduler(optimizer, scheduler_name, epochs)
