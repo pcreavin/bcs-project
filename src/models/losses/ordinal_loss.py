@@ -73,6 +73,9 @@ class OrdinalLoss(nn.Module):
         # Convert class labels to threshold targets
         targets = self.class_to_threshold_targets(class_labels)
         
+        # Ensure threshold_weights are on the same device as logits
+        threshold_weights = self.threshold_weights.to(logits.device)
+        
         # Binary cross-entropy with logits for each threshold
         # This is more numerically stable than sigmoid + BCE
         loss_per_threshold = F.binary_cross_entropy_with_logits(
@@ -80,7 +83,7 @@ class OrdinalLoss(nn.Module):
         )  # [batch_size, num_thresholds]
         
         # Apply threshold weights
-        loss_per_threshold = loss_per_threshold * self.threshold_weights.unsqueeze(0)
+        loss_per_threshold = loss_per_threshold * threshold_weights.unsqueeze(0)
         
         # Average across thresholds first, then across batch
         loss_per_sample = loss_per_threshold.mean(dim=1)  # [batch_size]
