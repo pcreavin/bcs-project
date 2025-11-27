@@ -67,12 +67,22 @@ def verify_losses_init():
 def test_import():
     """Test if the import works."""
     print("\nTesting import...")
+    import sys
+    from pathlib import Path
+    
+    # Add current directory to Python path
+    cwd = Path.cwd()
+    if str(cwd) not in sys.path:
+        sys.path.insert(0, str(cwd))
+    
     try:
         from src.models.losses import create_ordinal_loss
         print("  ✓ Import successful!")
         return True
     except ImportError as e:
         print(f"  ✗ Import failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 if __name__ == "__main__":
@@ -80,9 +90,13 @@ if __name__ == "__main__":
     print("Fixing GCP Imports")
     print("=" * 60)
     
-    # Check current directory
+    # Add current directory to Python path
     cwd = Path.cwd()
+    if str(cwd) not in sys.path:
+        sys.path.insert(0, str(cwd))
+    
     print(f"\nCurrent directory: {cwd}")
+    print(f"Python path includes: {cwd}")
     
     if not (cwd / "src" / "models").exists():
         print("ERROR: Must be in bcs-project root directory!")
