@@ -77,6 +77,7 @@ def main(cfg_path: str):
     val_csv = data_cfg.get("val", "data/val.csv")
     img_size = int(data_cfg.get("img_size", 224))
     do_aug = bool(data_cfg.get("do_aug", False))
+    crop_padding = data_cfg.get("crop_padding", None)  # ROI padding (e.g., 0.1 = 10% on each side)
 
     backbone = model_cfg.get("backbone", "efficientnet_b0")
     num_classes = int(model_cfg.get("num_classes", 5))
@@ -123,8 +124,10 @@ def main(cfg_path: str):
 
     # ---------- Data ----------
     print("\nBuilding datasets...")
-    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
-    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
+    if crop_padding is not None:
+        print(f"ROI crop padding: {crop_padding} ({crop_padding*100:.1f}% margin on each side)")
+    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug, crop_padding=crop_padding)
+    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False, crop_padding=crop_padding)
     
     dl_tr = DataLoader(
         ds_tr,
