@@ -25,7 +25,7 @@ train:
   optimizer: adamw
   weight_decay: 1e-4
   scheduler: cosine  # Cosine annealing learning rate scheduler
-  # ordinal_threshold_weights: [2.0, 1.0, 1.0, 1.0]  # Optional: weight first threshold more
+  ordinal_threshold_weights: [2.0, 1.0, 1.0, 1.0]  # Weight first threshold 2x for underweight detection
   early_stopping:
     enabled: true
     patience: 5
@@ -38,5 +38,5 @@ eval:
   class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
   ordinal_decoding_method: threshold_count  # Options: threshold_count, expected_value, max_prob
 
-exp_name: ordinal_b0_224_jitter
+exp_name: ordinal_b0_224_jitter_weighted
 

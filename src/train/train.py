@@ -257,7 +257,8 @@ def main(cfg_path: str):
         train_loss = running_loss / max(1, num_steps)
 
         # Validation phase
-        eval_results = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type)
+        ordinal_decoding_method = eval_cfg.get("ordinal_decoding_method", "threshold_count")
+        eval_results = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type, ordinal_decoding_method=ordinal_decoding_method)
         
         # Get monitored metric for early stopping
         if es_monitor == "val_acc":
@@ -300,7 +301,8 @@ def main(cfg_path: str):
     # ---------- Final Evaluation and Saving ----------
     print("\nFinal evaluation on best model...")
     model.load_state_dict(torch.load(os.path.join(out_dir, "best_model.pt")))
-    final_eval = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type)
+    ordinal_decoding_method = eval_cfg.get("ordinal_decoding_method", "threshold_count")
+    final_eval = evaluate(model, dl_va, device, class_names=class_names, head_type=head_type, ordinal_decoding_method=ordinal_decoding_method)
     
     # Save confusion matrix
     if eval_cfg.get("save_confusion_matrix", True):

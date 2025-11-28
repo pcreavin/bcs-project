@@ -13,7 +13,7 @@ import seaborn as sns
 
 
 @torch.no_grad()
-def evaluate(model, loader, device, class_names: Optional[List[str]] = None, head_type: str = "classification") -> Dict:
+def evaluate(model, loader, device, class_names: Optional[List[str]] = None, head_type: str = "classification", ordinal_decoding_method: str = "threshold_count") -> Dict:
     """
     Comprehensive evaluation with multiple metrics.
     
@@ -49,7 +49,7 @@ def evaluate(model, loader, device, class_names: Optional[List[str]] = None, hea
         
         if head_type == "ordinal":
             # Decode ordinal logits to class predictions
-            pred = OrdinalHead.decode(outputs, method="threshold_count")
+            pred = OrdinalHead.decode(outputs, method=ordinal_decoding_method)
         else:
             # Standard classification
             pred = outputs.argmax(1)
