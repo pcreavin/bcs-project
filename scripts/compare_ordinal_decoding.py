@@ -193,18 +193,29 @@ Examples:
         csv_path = "data/test.csv"
     
     # Create model - need to handle ordinal head creation
-    # For inference, we'll create a model that outputs the right shape
+    # Use robust loading logic that matches checkpoint structure exactly
     print(f"\nCreating model: {backbone}, head_type={head_type}")
     
-    # Load checkpoint to inspect structure
+    # Load checkpoint first to understand its structure
     checkpoint = torch.load(args.checkpoint, map_location=device)
     checkpoint_keys = list(checkpoint.keys())
     
-    # Create model without head to get feature dimension
+    print(f"\n[DEBUG] Loading ordinal model from: {args.checkpoint}")
+    print(f"[DEBUG] Checkpoint has {len(checkpoint_keys)} keys")
+    
+    # Inspect classifier keys to understand structure
+    classifier_keys = [k for k in checkpoint_keys if "classifier" in k.lower()]
+    print(f"[DEBUG] Classifier-related keys: {len(classifier_keys)}")
+    if classifier_keys:
+        for key in classifier_keys[:3]:
+            shape = checkpoint[key].shape if hasattr(checkpoint[key], 'shape') else 'N/A'
+            print(f"[DEBUG]   {key}: {shape}")
+    
     import timm
+    
+    # Create backbone first to get feature dimension
     backbone_model = timm.create_model(backbone, pretrained=pretrained, num_classes=0)
     
-    # Get feature dimension
     with torch.no_grad():
         dummy_input = torch.randn(1, 3, img_size, img_size)
         dummy_features = backbone_model(dummy_input)
@@ -213,50 +224,124 @@ Examples:
         else:
             in_features = dummy_features.shape[1]
     
-    # Create ordinal head
     num_thresholds = num_classes - 1
-    ordinal_head = torch.nn.Linear(in_features, num_thresholds)
+    print(f"[DEBUG] Feature dimension: {in_features}, Expected thresholds: {num_thresholds}")
     
-    # Try different model structures based on checkpoint keys
-    # Option 1: Sequential model (backbone + head)
-    if any("0." in k or "1." in k for k in checkpoint_keys):
-        model = torch.nn.Sequential(backbone_model, ordinal_head)
-    # Option 2: Backbone with replaced classifier
-    elif any("classifier" in k for k in checkpoint_keys):
-        classifier_keys = [k for k in checkpoint_keys if "classifier" in k]
-        if any("fc" in k for k in classifier_keys):
-            class OrdinalHeadModule(torch.nn.Module):
-                def __init__(self, in_features, num_thresholds):
+    # Create the full model structure exactly as it was during training
+    # First, check what the checkpoint classifier looks like
+    classifier_weight_key = None
+    classifier_bias_key = None
+    for key in checkpoint_keys:
+        if "classifier" in key.lower() and "weight" in key:
+            classifier_weight_key = key
+        if "classifier" in key.lower() and "bias" in key:
+            classifier_bias_key = key
+    
+    if classifier_weight_key and classifier_bias_key:
+        # Check the shape of the classifier in checkpoint
+        checkpoint_classifier_weight = checkpoint[classifier_weight_key]
+        checkpoint_output_size = checkpoint_classifier_weight.shape[0]
+        checkpoint_input_size = checkpoint_classifier_weight.shape[1] if len(checkpoint_classifier_weight.shape) > 1 else None
+        
+        print(f"[DEBUG] Checkpoint classifier: {checkpoint_classifier_weight.shape}")
+        print(f"[DEBUG] Expected thresholds: {num_thresholds}")
+        
+        if checkpoint_output_size != num_thresholds:
+            print(f"[DEBUG] ⚠️  WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
+        
+        # Check if classifier has nested structure (e.g., classifier.fc)
+        has_nested_classifier = "." in classifier_weight_key.replace("classifier.", "", 1)
+        classifier_submodule = classifier_weight_key.split(".")[1] if has_nested_classifier else None
+        
+        print(f"[DEBUG] Classifier structure: nested={has_nested_classifier}, submodule={classifier_submodule}")
+        
+        # Create model matching the checkpoint structure
+        # Use pretrained=False since we'll load all weights from checkpoint
+        model = timm.create_model(backbone, pretrained=False, num_classes=0)  # No classifier initially
+        
+        # Create ordinal head with correct structure
+        ordinal_linear = torch.nn.Linear(checkpoint_input_size or in_features, checkpoint_output_size)
+        
+        # If checkpoint has nested structure (classifier.fc), create wrapper module
+        if has_nested_classifier and classifier_submodule:
+            class OrdinalHeadWrapper(torch.nn.Module):
+                def __init__(self, fc_layer):
                     super().__init__()
-                    self.fc = torch.nn.Linear(in_features, num_thresholds)
+                    self.fc = fc_layer
                 def forward(self, x):
                     return self.fc(x)
-            ordinal_head_module = OrdinalHeadModule(in_features, num_thresholds)
+            ordinal_head = OrdinalHeadWrapper(ordinal_linear)
+            print(f"[DEBUG] Created nested classifier structure: classifier.{classifier_submodule}")
         else:
-            ordinal_head_module = ordinal_head
+            ordinal_head = ordinal_linear
+            print(f"[DEBUG] Created direct classifier structure")
         
-        # Create full model by replacing classifier
-        model = timm.create_model(backbone, pretrained=pretrained, num_classes=num_classes)
-        if hasattr(model, "classifier"):
-            model.classifier = ordinal_head_module
+        # Add the ordinal head to model
+        if "efficientnet" in backbone.lower() or hasattr(model, "classifier"):
+            model.classifier = ordinal_head
         elif hasattr(model, "head"):
-            model.head = ordinal_head_module
+            model.head = ordinal_head
+        elif hasattr(model, "fc"):
+            model.fc = ordinal_head
         else:
-            model = torch.nn.Sequential(backbone_model, ordinal_head)
+            # Fallback: Sequential wrapper
+            model = torch.nn.Sequential(model, ordinal_head)
+        
+        print(f"[DEBUG] Created model structure matching checkpoint (output size: {checkpoint_output_size})")
     else:
-        # Default: Sequential model
-        model = torch.nn.Sequential(backbone_model, ordinal_head)
+        # Fallback: try standard approach
+        print(f"[DEBUG] Could not find classifier keys, using fallback structure")
+        model = timm.create_model(backbone, pretrained=False, num_classes=num_classes)
+        ordinal_head = torch.nn.Linear(in_features, num_thresholds)
+        
+        if hasattr(model, "classifier"):
+            model.classifier = ordinal_head
+        elif hasattr(model, "head"):
+            model.head = ordinal_head
+        elif hasattr(model, "fc"):
+            model.fc = ordinal_head
+        else:
+            raise ValueError(f"Model doesn't have classifier/head/fc. Available: {[x for x in dir(model) if not x.startswith('_')][:10]}")
     
     model.to(device)
     
-    # Load checkpoint
-    print(f"Loading checkpoint: {args.checkpoint}")
+    # Load checkpoint - this should load all backbone weights + classifier weights
     try:
-        model.load_state_dict(checkpoint, strict=True)
+        missing_keys, unexpected_keys = model.load_state_dict(checkpoint, strict=False)
+        
+        if missing_keys:
+            print(f"[DEBUG] ⚠️  {len(missing_keys)} keys missing (will use random/default values)")
+            print(f"[DEBUG] First 3 missing: {missing_keys[:3]}")
+        
+        if unexpected_keys:
+            print(f"[DEBUG] ⚠️  {len(unexpected_keys)} unexpected keys (ignored)")
+            print(f"[DEBUG] First 3 unexpected: {unexpected_keys[:3]}")
+        
+        if not missing_keys and not unexpected_keys:
+            print(f"[DEBUG] ✓ Perfect match! All keys loaded successfully")
+        elif len(missing_keys) > len(checkpoint_keys) * 0.1:  # More than 10% missing
+            print(f"[DEBUG] ⚠️  WARNING: Many keys missing ({len(missing_keys)}/{len(checkpoint_keys)})")
+            print(f"[DEBUG] This suggests the model structure doesn't match!")
+        
+        # Verify output shape
+        model.eval()
+        with torch.no_grad():
+            test_output = model(dummy_input.to(device))
+            actual_shape = test_output.shape
+            expected_shape = (1, num_thresholds)
+            print(f"[DEBUG] Model output shape: {actual_shape}, Expected: {expected_shape}")
+            
+            if actual_shape[1] != num_thresholds:
+                raise ValueError(
+                    f"Model output shape {actual_shape} doesn't match expected {expected_shape}. "
+                    f"Model structure may not match checkpoint!"
+                )
+            print(f"[DEBUG] ✓ Output shape verified")
+        
     except RuntimeError as e:
-        print(f"Warning: Strict loading failed: {e}")
-        print("Attempting to load with strict=False...")
-        model.load_state_dict(checkpoint, strict=False)
+        print(f"[DEBUG] ❌ Error loading checkpoint: {e}")
+        raise
+    
     model.eval()
     
     # Load dataset
