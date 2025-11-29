@@ -95,17 +95,36 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
         checkpoint_output_size = checkpoint_classifier_weight.shape[0]
         checkpoint_input_size = checkpoint_classifier_weight.shape[1] if len(checkpoint_classifier_weight.shape) > 1 else None
         
+        if checkpoint_output_size != num_thresholds:
+            print(f"WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
+        
+        # Check if classifier is nested (e.g., classifier.fc.weight)
+        has_nested_classifier = "." in classifier_weight_key.replace("classifier.", "", 1)
+        classifier_submodule = classifier_weight_key.split(".")[1] if has_nested_classifier else None
+        
         model = timm.create_model(backbone, pretrained=False, num_classes=0)
         ordinal_linear = torch.nn.Linear(checkpoint_input_size or in_features, checkpoint_output_size)
         
-        if "efficientnet" in backbone.lower() or hasattr(model, "classifier"):
-            model.classifier = ordinal_linear
-        elif hasattr(model, "head"):
-            model.head = ordinal_linear
-        elif hasattr(model, "fc"):
-            model.fc = ordinal_linear
+        # Handle nested classifier structure (e.g., classifier.fc)
+        if has_nested_classifier and classifier_submodule:
+            class OrdinalHeadWrapper(torch.nn.Module):
+                def __init__(self, fc_layer):
+                    super().__init__()
+                    self.fc = fc_layer
+                def forward(self, x):
+                    return self.fc(x)
+            ordinal_head = OrdinalHeadWrapper(ordinal_linear)
         else:
-            model = torch.nn.Sequential(model, ordinal_linear)
+            ordinal_head = ordinal_linear
+        
+        if "efficientnet" in backbone.lower() or hasattr(model, "classifier"):
+            model.classifier = ordinal_head
+        elif hasattr(model, "head"):
+            model.head = ordinal_head
+        elif hasattr(model, "fc"):
+            model.fc = ordinal_head
+        else:
+            model = torch.nn.Sequential(model, ordinal_head)
     else:
         model = timm.create_model(backbone, pretrained=False, num_classes=num_classes)
         ordinal_head = torch.nn.Linear(in_features, num_thresholds)
@@ -122,8 +141,26 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
     model.to(device)
     
     try:
-        model.load_state_dict(checkpoint, strict=False)
+        missing_keys, unexpected_keys = model.load_state_dict(checkpoint, strict=False)
+        
+        if missing_keys and len(missing_keys) > len(checkpoint_keys) * 0.1:
+            print(f"WARNING: {len(missing_keys)} keys missing (>{len(checkpoint_keys)*0.1:.0f}%) - model structure may not match checkpoint")
+            print(f"   First few missing: {missing_keys[:5]}")
+        
         model.eval()
+        # Validate model outputs correct shape
+        with torch.no_grad():
+            test_input = torch.randn(1, 3, img_size, img_size).to(device)
+            test_output = model(test_input)
+            actual_shape = test_output.shape
+            expected_shape = (1, num_thresholds)
+            
+            if actual_shape[1] != num_thresholds:
+                raise ValueError(
+                    f"Model output shape {actual_shape} doesn't match expected {expected_shape}. "
+                    f"Model structure may not match checkpoint!"
+                )
+        
     except RuntimeError as e:
         print(f"❌ Error loading checkpoint: {e}")
         raise
@@ -471,13 +508,29 @@ def main():
     else:  # test
         csv_path = "data/test.csv"
     
-    # Get image size and class names (use first model's config)
-    img_size = int(data_cfg.get("img_size", 224))
+    # Get image sizes for each model (CRITICAL: each model needs its native size)
+    model_img_sizes = []
+    for cfg in configs:
+        model_data_cfg = cfg.get("data", {})
+        model_img_sizes.append(int(model_data_cfg.get("img_size", 224)))
+    
+    # Check if all models use the same image size
+    unique_sizes = set(model_img_sizes)
+    if len(unique_sizes) > 1:
+        print(f"WARNING: Models use different image sizes: {model_img_sizes}")
+        print(f"   This may cause issues. Consider using models with the same image size.")
+        print(f"   Using first model's size ({model_img_sizes[0]}px) for all models.")
+    
+    # Use first model's image size for dataset (all models will be evaluated on this)
+    # NOTE: This is a limitation - ideally each model should be evaluated at its native size
+    img_size = model_img_sizes[0]
     eval_cfg = configs[0].get("eval", {})
     class_names = eval_cfg.get("class_names", ["3.25", "3.5", "3.75", "4.0", "4.25"])
     
     # Load dataset
     print(f"\nLoading {args.split} dataset: {csv_path}")
+    print(f"WARNING: Using image size {img_size}px for all models (from first model)")
+    print(f"   Model image sizes: {model_img_sizes}")
     dataset = BcsDataset(csv_path, img_size=img_size, train=False, do_aug=False)
     loader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=2)
     print(f"Samples: {len(dataset)}")
