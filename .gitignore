@@ -15,3 +15,4 @@ dataset.rar
 notebooks/
 scripts/__pycache__/
 .venv/
+outputs/*.png
