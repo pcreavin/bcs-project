@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-"""Compare different decoding methods for ordinal regression models.
-
-This script evaluates an already-trained ordinal model using different decoding methods
-(threshold_count, expected_value, max_prob) without retraining.
-"""
+"""Compare different decoding methods for ordinal regression models."""
 import sys
 from pathlib import Path
 
-# Add project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -107,24 +102,7 @@ def evaluate_ordinal(model, loader, device, decoding_method: str, class_names: L
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Compare different decoding methods for ordinal regression",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Compare all decoding methods
-  python scripts/compare_ordinal_decoding.py \\
-      --checkpoint outputs/ordinal_b0_224_jitter_weighted/best_model.pt \\
-      --config outputs/ordinal_b0_224_jitter_weighted/config.yaml
-  
-  # Test specific decoding method on validation set
-  python scripts/compare_ordinal_decoding.py \\
-      --checkpoint outputs/ordinal_b0_224_jitter_weighted/best_model.pt \\
-      --config outputs/ordinal_b0_224_jitter_weighted/config.yaml \\
-      --method expected_value \\
-      --split val
-        """
-    )
+    parser = argparse.ArgumentParser(description="Compare different decoding methods for ordinal regression")
     parser.add_argument("--checkpoint", type=str, required=True,
                         help="Path to ordinal model checkpoint (.pt file)")
     parser.add_argument("--config", type=str, required=True,
@@ -200,17 +178,6 @@ Examples:
     checkpoint = torch.load(args.checkpoint, map_location=device)
     checkpoint_keys = list(checkpoint.keys())
     
-    print(f"\n[DEBUG] Loading ordinal model from: {args.checkpoint}")
-    print(f"[DEBUG] Checkpoint has {len(checkpoint_keys)} keys")
-    
-    # Inspect classifier keys to understand structure
-    classifier_keys = [k for k in checkpoint_keys if "classifier" in k.lower()]
-    print(f"[DEBUG] Classifier-related keys: {len(classifier_keys)}")
-    if classifier_keys:
-        for key in classifier_keys[:3]:
-            shape = checkpoint[key].shape if hasattr(checkpoint[key], 'shape') else 'N/A'
-            print(f"[DEBUG]   {key}: {shape}")
-    
     import timm
     
     # Create backbone first to get feature dimension
@@ -225,7 +192,6 @@ Examples:
             in_features = dummy_features.shape[1]
     
     num_thresholds = num_classes - 1
-    print(f"[DEBUG] Feature dimension: {in_features}, Expected thresholds: {num_thresholds}")
     
     # Create the full model structure exactly as it was during training
     # First, check what the checkpoint classifier looks like
@@ -243,17 +209,12 @@ Examples:
         checkpoint_output_size = checkpoint_classifier_weight.shape[0]
         checkpoint_input_size = checkpoint_classifier_weight.shape[1] if len(checkpoint_classifier_weight.shape) > 1 else None
         
-        print(f"[DEBUG] Checkpoint classifier: {checkpoint_classifier_weight.shape}")
-        print(f"[DEBUG] Expected thresholds: {num_thresholds}")
-        
         if checkpoint_output_size != num_thresholds:
-            print(f"[DEBUG] ⚠️  WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
+            print(f"⚠️  WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
         
         # Check if classifier has nested structure (e.g., classifier.fc)
         has_nested_classifier = "." in classifier_weight_key.replace("classifier.", "", 1)
         classifier_submodule = classifier_weight_key.split(".")[1] if has_nested_classifier else None
-        
-        print(f"[DEBUG] Classifier structure: nested={has_nested_classifier}, submodule={classifier_submodule}")
         
         # Create model matching the checkpoint structure
         # Use pretrained=False since we'll load all weights from checkpoint
@@ -271,10 +232,8 @@ Examples:
                 def forward(self, x):
                     return self.fc(x)
             ordinal_head = OrdinalHeadWrapper(ordinal_linear)
-            print(f"[DEBUG] Created nested classifier structure: classifier.{classifier_submodule}")
         else:
             ordinal_head = ordinal_linear
-            print(f"[DEBUG] Created direct classifier structure")
         
         # Add the ordinal head to model
         if "efficientnet" in backbone.lower() or hasattr(model, "classifier"):
@@ -286,11 +245,8 @@ Examples:
         else:
             # Fallback: Sequential wrapper
             model = torch.nn.Sequential(model, ordinal_head)
-        
-        print(f"[DEBUG] Created model structure matching checkpoint (output size: {checkpoint_output_size})")
     else:
         # Fallback: try standard approach
-        print(f"[DEBUG] Could not find classifier keys, using fallback structure")
         model = timm.create_model(backbone, pretrained=False, num_classes=num_classes)
         ordinal_head = torch.nn.Linear(in_features, num_thresholds)
         
@@ -309,19 +265,8 @@ Examples:
     try:
         missing_keys, unexpected_keys = model.load_state_dict(checkpoint, strict=False)
         
-        if missing_keys:
-            print(f"[DEBUG] ⚠️  {len(missing_keys)} keys missing (will use random/default values)")
-            print(f"[DEBUG] First 3 missing: {missing_keys[:3]}")
-        
-        if unexpected_keys:
-            print(f"[DEBUG] ⚠️  {len(unexpected_keys)} unexpected keys (ignored)")
-            print(f"[DEBUG] First 3 unexpected: {unexpected_keys[:3]}")
-        
-        if not missing_keys and not unexpected_keys:
-            print(f"[DEBUG] ✓ Perfect match! All keys loaded successfully")
-        elif len(missing_keys) > len(checkpoint_keys) * 0.1:  # More than 10% missing
-            print(f"[DEBUG] ⚠️  WARNING: Many keys missing ({len(missing_keys)}/{len(checkpoint_keys)})")
-            print(f"[DEBUG] This suggests the model structure doesn't match!")
+        if missing_keys and len(missing_keys) > len(checkpoint_keys) * 0.1:
+            print(f"⚠️  WARNING: {len(missing_keys)} keys missing (>{len(checkpoint_keys)*0.1:.0f}%) - model structure may not match checkpoint")
         
         # Verify output shape
         model.eval()
@@ -329,17 +274,15 @@ Examples:
             test_output = model(dummy_input.to(device))
             actual_shape = test_output.shape
             expected_shape = (1, num_thresholds)
-            print(f"[DEBUG] Model output shape: {actual_shape}, Expected: {expected_shape}")
             
             if actual_shape[1] != num_thresholds:
                 raise ValueError(
                     f"Model output shape {actual_shape} doesn't match expected {expected_shape}. "
                     f"Model structure may not match checkpoint!"
                 )
-            print(f"[DEBUG] ✓ Output shape verified")
         
     except RuntimeError as e:
-        print(f"[DEBUG] ❌ Error loading checkpoint: {e}")
+        print(f"❌ Error loading checkpoint: {e}")
         raise
     
     model.eval()

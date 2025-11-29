@@ -9,10 +9,7 @@ ORDER = [3.25, 3.5, 3.75, 4.0, 4.25]
 IDX = {v: i for i, v in enumerate(ORDER)}
 
 def parse_bbox(xml_path: pathlib.Path):
-    """
-    Try to parse a Pascal VOC-style bbox from an XML.
-    Returns (xmin, ymin, xmax, ymax) as ints, or None if not found/invalid.
-    """
+    """Parse Pascal VOC-style bbox from XML, returns (xmin, ymin, xmax, ymax) or None."""
     if not xml_path.exists():
         return None
     try:

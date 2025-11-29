@@ -5,22 +5,7 @@ from typing import Literal
 
 
 def decode_ordinal(logits: torch.Tensor, method: Literal["threshold_count", "expected_value", "max_prob"] = "threshold_count") -> torch.Tensor:
-    """
-    Decode ordinal threshold logits to class predictions.
-    
-    For CORAL-style ordinal regression, the model outputs (num_classes - 1) threshold logits.
-    This function converts those logits to class predictions using various strategies.
-    
-    Args:
-        logits: Tensor of shape (batch_size, num_thresholds) where num_thresholds = num_classes - 1
-        method: Decoding method to use:
-            - "threshold_count": Count how many thresholds are >= 0.5 (most common)
-            - "expected_value": Use expected value (sum of probabilities)
-            - "max_prob": Use threshold with highest probability
-    
-    Returns:
-        Tensor of shape (batch_size,) with predicted class indices (0 to num_classes-1)
-    """
+    """Decode ordinal threshold logits to class predictions."""
     if method == "threshold_count":
         probs = torch.sigmoid(logits)
         predicted_class = (probs >= 0.5).sum(dim=1).long()

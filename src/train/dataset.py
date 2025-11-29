@@ -7,18 +7,7 @@ from albumentations.pytorch import ToTensorV2
 import cv2
 
 class BcsDataset(Dataset):
-    """
-    Loads images/labels from a CSV with columns:
-      image_path, bcs_5class (0..4), xmin, ymin, xmax, ymax
-    - Crops to ROI if bbox present, else uses full image.
-    - Optionally adds padding around ROI for context (crop_padding parameter).
-    - Resizes to img_size, normalizes, returns tensor.
-    
-    Args:
-        crop_padding: Float (0.0-1.0) indicating margin to add around ROI bbox.
-                      e.g., 0.1 = add 10% padding on each side.
-                      If None or 0.0, crops tightly to bbox (ROI-only).
-    """
+    """Dataset for BCS classification with ROI cropping and optional padding."""
     def __init__(self, csv_path, img_size=320, train=True, do_aug=False, crop_padding=None):
         self.df = pd.read_csv(csv_path)
         self.img_size = img_size
@@ -37,27 +26,24 @@ class BcsDataset(Dataset):
 
     def __getitem__(self, i):
         r = self.df.iloc[i]
-        img = cv2.imread(r.image_path)[:, :, ::-1]  # BGR->RGB
-        # ROI crop (if bbox present)
+        img = cv2.imread(r.image_path)[:, :, ::-1]
+        
         if pd.notna(r.get("xmin", np.nan)):
             try:
                 h, w = img.shape[:2]
                 xmin, ymin, xmax, ymax = map(int, [r.xmin, r.ymin, r.xmax, r.ymax])
                 
-                # Add padding around bbox if crop_padding > 0
                 if self.crop_padding > 0:
                     bbox_w = xmax - xmin
                     bbox_h = ymax - ymin
                     pad_w = int(bbox_w * self.crop_padding)
                     pad_h = int(bbox_h * self.crop_padding)
                     
-                    # Expand bbox with padding
                     xmin = max(0, xmin - pad_w)
                     xmax = min(w, xmax + pad_w)
                     ymin = max(0, ymin - pad_h)
                     ymax = min(h, ymax + pad_h)
                 
-                # Clamp to image boundaries
                 xmin = max(0, min(xmin, w - 1))
                 xmax = max(1, min(xmax, w))
                 ymin = max(0, min(ymin, h - 1))
@@ -66,8 +52,8 @@ class BcsDataset(Dataset):
                 if xmax > xmin and ymax > ymin:
                     img = img[ymin:ymax, xmin:xmax]
             except Exception:
-                pass  # fall back to full image if anything goes wrong
+                pass
 
         x = self.tf(image=img)["image"]
-        y = int(r.bcs_5class)  # 0..4
+        y = int(r.bcs_5class)
         return x, y

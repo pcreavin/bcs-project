@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-"""Evaluate ensemble of classification baseline + ordinal regression model.
-
-Ensemble rule:
-- If both models predict the same class → use it
-- If they differ by ±1 class → use baseline (it's better at 0-1 loss)
-- If they differ by >1 class → use ordinal prediction (since it's more distance-aware)
-
-This script evaluates the ensemble on the test set and reports metrics.
-"""
+"""Evaluate ensemble of classification baseline + ordinal regression model."""
 import sys
 from pathlib import Path
 
-# Add project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -47,7 +38,6 @@ def load_classification_model(checkpoint_path: str, config_path: str, device: st
     pretrained = bool(model_cfg.get("pretrained", True))
     finetune_mode = model_cfg.get("finetune_mode", "full")
     
-    # Create model
     model = create_model(
         backbone=backbone,
         num_classes=num_classes,
@@ -56,7 +46,6 @@ def load_classification_model(checkpoint_path: str, config_path: str, device: st
     )
     model.to(device)
     
-    # Load checkpoint
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint)
     model.eval()
@@ -65,11 +54,7 @@ def load_classification_model(checkpoint_path: str, config_path: str, device: st
 
 
 def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, decoding_method: str = "threshold_count"):
-    """Load an ordinal regression model from checkpoint.
-    
-    The model should have been created with an OrdinalHead replacing the classifier.
-    This function reconstructs the exact structure to match the saved checkpoint.
-    """
+    """Load ordinal regression model from checkpoint."""
     with open(config_path, "r") as f:
         cfg = yaml.safe_load(f)
     
@@ -81,24 +66,11 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
     pretrained = bool(model_cfg.get("pretrained", True))
     img_size = int(data_cfg.get("img_size", 224))
     
-    # Load checkpoint first to understand its structure
     checkpoint = torch.load(checkpoint_path, map_location=device)
     checkpoint_keys = list(checkpoint.keys())
     
-    print(f"\n[DEBUG] Loading ordinal model from: {checkpoint_path}")
-    print(f"[DEBUG] Checkpoint has {len(checkpoint_keys)} keys")
-    
-    # Inspect classifier keys to understand structure
-    classifier_keys = [k for k in checkpoint_keys if "classifier" in k.lower()]
-    print(f"[DEBUG] Classifier-related keys: {len(classifier_keys)}")
-    if classifier_keys:
-        for key in classifier_keys[:3]:
-            shape = checkpoint[key].shape if hasattr(checkpoint[key], 'shape') else 'N/A'
-            print(f"[DEBUG]   {key}: {shape}")
-    
     import timm
     
-    # Create backbone first to get feature dimension
     backbone_model = timm.create_model(backbone, pretrained=pretrained, num_classes=0)
     
     with torch.no_grad():
@@ -110,12 +82,6 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
             in_features = dummy_features.shape[1]
     
     num_thresholds = num_classes - 1
-    print(f"[DEBUG] Feature dimension: {in_features}, Expected thresholds: {num_thresholds}")
-    
-    # Create the full model structure exactly as it was during training
-    # Strategy: Create model structure that matches the checkpoint keys
-    
-    # First, check what the checkpoint classifier looks like
     classifier_weight_key = None
     classifier_bias_key = None
     for key in checkpoint_keys:
@@ -125,31 +91,18 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
             classifier_bias_key = key
     
     if classifier_weight_key and classifier_bias_key:
-        # Check the shape of the classifier in checkpoint
         checkpoint_classifier_weight = checkpoint[classifier_weight_key]
         checkpoint_output_size = checkpoint_classifier_weight.shape[0]
         checkpoint_input_size = checkpoint_classifier_weight.shape[1] if len(checkpoint_classifier_weight.shape) > 1 else None
         
-        print(f"[DEBUG] Checkpoint classifier: {checkpoint_classifier_weight.shape}")
-        print(f"[DEBUG] Expected thresholds: {num_thresholds}")
-        
         if checkpoint_output_size != num_thresholds:
-            print(f"[DEBUG] ⚠️  WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
+            print(f"⚠️  WARNING: Checkpoint output size ({checkpoint_output_size}) != expected ({num_thresholds})")
         
-        # Check if classifier has nested structure (e.g., classifier.fc)
         has_nested_classifier = "." in classifier_weight_key.replace("classifier.", "", 1)
         classifier_submodule = classifier_weight_key.split(".")[1] if has_nested_classifier else None
         
-        print(f"[DEBUG] Classifier structure: nested={has_nested_classifier}, submodule={classifier_submodule}")
-        
-        # Create model matching the checkpoint structure
-        # Use pretrained=False since we'll load all weights from checkpoint
-        model = timm.create_model(backbone, pretrained=False, num_classes=0)  # No classifier initially
-        
-        # Create ordinal head with correct structure
+        model = timm.create_model(backbone, pretrained=False, num_classes=0)
         ordinal_linear = torch.nn.Linear(checkpoint_input_size or in_features, checkpoint_output_size)
-        
-        # If checkpoint has nested structure (classifier.fc), create wrapper module
         if has_nested_classifier and classifier_submodule:
             class OrdinalHeadWrapper(torch.nn.Module):
                 def __init__(self, fc_layer):
@@ -158,12 +111,8 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
                 def forward(self, x):
                     return self.fc(x)
             ordinal_head = OrdinalHeadWrapper(ordinal_linear)
-            print(f"[DEBUG] Created nested classifier structure: classifier.{classifier_submodule}")
         else:
             ordinal_head = ordinal_linear
-            print(f"[DEBUG] Created direct classifier structure")
-        
-        # Add the ordinal head to model
         if "efficientnet" in backbone.lower() or hasattr(model, "classifier"):
             model.classifier = ordinal_head
         elif hasattr(model, "head"):
@@ -171,13 +120,8 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
         elif hasattr(model, "fc"):
             model.fc = ordinal_head
         else:
-            # Fallback: Sequential wrapper
             model = torch.nn.Sequential(model, ordinal_head)
-        
-        print(f"[DEBUG] Created model structure matching checkpoint (output size: {checkpoint_output_size})")
     else:
-        # Fallback: try standard approach
-        print(f"[DEBUG] Could not find classifier keys, using fallback structure")
         model = timm.create_model(backbone, pretrained=False, num_classes=num_classes)
         ordinal_head = torch.nn.Linear(in_features, num_thresholds)
         
@@ -192,41 +136,26 @@ def load_ordinal_model(checkpoint_path: str, config_path: str, device: str, deco
     
     model.to(device)
     
-    # Load checkpoint - this should load all backbone weights + classifier weights
     try:
         missing_keys, unexpected_keys = model.load_state_dict(checkpoint, strict=False)
         
-        if missing_keys:
-            print(f"[DEBUG] ⚠️  {len(missing_keys)} keys missing (will use random/default values)")
-            print(f"[DEBUG] First 3 missing: {missing_keys[:3]}")
+        if missing_keys and len(missing_keys) > len(checkpoint_keys) * 0.1:
+            print(f"⚠️  WARNING: {len(missing_keys)} keys missing (>{len(checkpoint_keys)*0.1:.0f}%) - model structure may not match checkpoint")
         
-        if unexpected_keys:
-            print(f"[DEBUG] ⚠️  {len(unexpected_keys)} unexpected keys (ignored)")
-            print(f"[DEBUG] First 3 unexpected: {unexpected_keys[:3]}")
-        
-        if not missing_keys and not unexpected_keys:
-            print(f"[DEBUG] ✓ Perfect match! All keys loaded successfully")
-        elif len(missing_keys) > len(checkpoint_keys) * 0.1:  # More than 10% missing
-            print(f"[DEBUG] ⚠️  WARNING: Many keys missing ({len(missing_keys)}/{len(checkpoint_keys)})")
-            print(f"[DEBUG] This suggests the model structure doesn't match!")
-        
-        # Verify output shape
         model.eval()
         with torch.no_grad():
             test_output = model(dummy_input.to(device))
             actual_shape = test_output.shape
             expected_shape = (1, num_thresholds)
-            print(f"[DEBUG] Model output shape: {actual_shape}, Expected: {expected_shape}")
             
             if actual_shape[1] != num_thresholds:
                 raise ValueError(
                     f"Model output shape {actual_shape} doesn't match expected {expected_shape}. "
                     f"Model structure may not match checkpoint!"
                 )
-            print(f"[DEBUG] ✓ Output shape verified")
         
     except RuntimeError as e:
-        print(f"[DEBUG] ❌ Error loading checkpoint: {e}")
+        print(f"❌ Error loading checkpoint: {e}")
         raise
     
     return model, cfg, decoding_method
@@ -387,27 +316,7 @@ def evaluate_ensemble(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Evaluate ensemble of classification + ordinal models",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Evaluate ensemble on test set
-  python scripts/evaluate_ensemble.py \\
-      --baseline-checkpoint outputs/ablation_full_enhanced_b0_224_jitter/best_model.pt \\
-      --baseline-config outputs/ablation_full_enhanced_b0_224_jitter/config.yaml \\
-      --ordinal-checkpoint outputs/ordinal_b0_224_jitter_weighted/best_model.pt \\
-      --ordinal-config outputs/ordinal_b0_224_jitter_weighted/config.yaml \\
-      --split test
-  
-  # Evaluate with specific ordinal decoding method
-  python scripts/evaluate_ensemble.py \\
-      --baseline-checkpoint outputs/ablation_full_enhanced_b0_224_jitter/best_model.pt \\
-      --baseline-config outputs/ablation_full_enhanced_b0_224_jitter/config.yaml \\
-      --ordinal-checkpoint outputs/ordinal_b0_224_jitter_weighted/best_model.pt \\
-      --ordinal-config outputs/ordinal_b0_224_jitter_weighted/config.yaml \\
-      --ordinal-decoding expected_value \\
-      --split val
-        """
+        description="Evaluate ensemble of classification + ordinal models"
     )
     parser.add_argument("--baseline-checkpoint", type=str, required=True,
                         help="Path to classification baseline model checkpoint")
