@@ -1,7 +1,8 @@
 # data & artifacts
 data/
 !data/.gitkeep
-
+outputs/
+!outputs/.gitkeep
 *.rar *.zip *.7z
 *.pt *.pth *.onnx *.tflite *.ckpt
 wandb/ mlruns/

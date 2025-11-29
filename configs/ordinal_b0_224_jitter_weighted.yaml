@@ -1,16 +1,17 @@
 data:
-  train: data/train.csv  # Use original CSV with bboxes for ROI cropping
+  train: data/train.csv  # Use original CSV with bboxes for ROI cropping + jitter
   val: data/val.csv
   img_size: 224
   do_aug: true  # Enabled data augmentation (horizontal flip + rotation)
   skip_resize: false  # Resize on-the-fly from original images with ROI cropping
-  crop_padding: 0.05  # ROI+context: add 5% padding margin on each side
+  crop_jitter: 0.1  # Add 10% random padding around ROI bbox for robustness
 
 model:
   backbone: efficientnet_b0
   num_classes: 5
   pretrained: true
   finetune_mode: full  # Fine-tune all parameters
+  head_type: ordinal  # Use ordinal regression head (CORAL)
 
 train:
   batch_size: 32
@@ -24,7 +25,7 @@ train:
   optimizer: adamw
   weight_decay: 1e-4
   scheduler: cosine  # Cosine annealing learning rate scheduler
-  label_smoothing: 0.05
+  ordinal_threshold_weights: [2.0, 1.0, 1.0, 1.0]  # Weight first threshold 2x for underweight detection
   early_stopping:
     enabled: true
     patience: 5
@@ -35,7 +36,7 @@ eval:
   save_confusion_matrix: true
   save_per_class_metrics: true
   class_names: ["3.25", "3.5", "3.75", "4.0", "4.25"]
+  ordinal_decoding_method: threshold_count  # Options: threshold_count, expected_value, max_prob
 
-exp_name: roi_robustness_padding_05
-
+exp_name: ordinal_b0_224_jitter_weighted
 
