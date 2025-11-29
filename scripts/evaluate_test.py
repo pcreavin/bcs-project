@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Evaluate a trained model on the held-out test set."""
+"""Evaluate a trained model on the held-out test set.
+
+This script should only be run after model selection is complete.
+The test set is kept separate to ensure unbiased final evaluation.
+"""
 import argparse
 import os
 import json
@@ -13,7 +17,21 @@ from src.eval import evaluate, plot_confusion_matrix
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate trained model on test set")
+    parser = argparse.ArgumentParser(
+        description="Evaluate trained model on test set",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Evaluate a specific model checkpoint
+  python scripts/evaluate_test.py --checkpoint outputs/ablation_full/best_model.pt \\
+                                   --config outputs/ablation_full/config.yaml
+  
+  # Evaluate and save results
+  python scripts/evaluate_test.py --checkpoint outputs/ablation_full/best_model.pt \\
+                                   --config outputs/ablation_full/config.yaml \\
+                                   --output-dir outputs/ablation_full/test_results
+        """
+    )
     parser.add_argument("--checkpoint", type=str, required=True,
                         help="Path to model checkpoint (.pt file)")
     parser.add_argument("--config", type=str, required=True,
@@ -34,6 +52,7 @@ def main():
     print(f"Test CSV: {args.test_csv}")
     print("=" * 60)
     
+    # Load config
     with open(args.config, "r") as f:
         cfg = yaml.safe_load(f)
     
@@ -41,6 +60,7 @@ def main():
     model_cfg = cfg.get("model", {})
     eval_cfg = cfg.get("eval", {})
     
+    # Get device
     if args.device:
         device = args.device
     else:
@@ -53,6 +73,7 @@ def main():
     
     print(f"\nDevice: {device}")
     
+    # Load model config
     backbone = model_cfg.get("backbone", "efficientnet_b0")
     num_classes = int(model_cfg.get("num_classes", 5))
     pretrained = bool(model_cfg.get("pretrained", True))
@@ -61,6 +82,7 @@ def main():
     img_size = int(data_cfg.get("img_size", 224))
     class_names = eval_cfg.get("class_names", ["3.25", "3.5", "3.75", "4.0", "4.25"])
     
+    # Create model
     print(f"\nCreating model: {backbone}, finetune_mode={finetune_mode}")
     model = create_model(
         backbone=backbone,
@@ -70,10 +92,12 @@ def main():
     )
     model.to(device)
     
+    # Load checkpoint
     print(f"Loading checkpoint: {args.checkpoint}")
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
     
+    # Load test dataset
     print(f"\nLoading test dataset: {args.test_csv}")
     test_ds = BcsDataset(args.test_csv, img_size=img_size, train=False, do_aug=False)
     test_loader = DataLoader(
@@ -84,9 +108,11 @@ def main():
     )
     print(f"Test samples: {len(test_ds)}")
     
+    # Evaluate
     print("\nEvaluating on test set...")
     test_results = evaluate(model, test_loader, device, class_names=class_names)
     
+    # Print results
     print("\n" + "=" * 60)
     print("TEST SET RESULTS")
     print("=" * 60)
@@ -102,18 +128,22 @@ def main():
         print(f"  {name}: {precision:.4f}")
     print("=" * 60)
     
+    # Save results
     if args.output_dir:
         output_dir = args.output_dir
     else:
+        # Default: save in same directory as checkpoint
         output_dir = os.path.dirname(args.checkpoint)
     
     os.makedirs(output_dir, exist_ok=True)
     
+    # Save metrics
     metrics_path = os.path.join(output_dir, "test_metrics.json")
     with open(metrics_path, "w") as f:
         json.dump(test_results, f, indent=2)
     print(f"\nSaved test metrics to: {metrics_path}")
     
+    # Save confusion matrix
     cm_path = os.path.join(output_dir, "test_confusion_matrix.png")
     plot_confusion_matrix(
         test_results["confusion_matrix"],

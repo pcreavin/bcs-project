@@ -12,14 +12,16 @@ This project uses transfer learning with EfficientNet to classify dairy cattle b
 - **Labels**: 5 BCS bins (3.25, 3.5, 3.75, 4.0, 4.25)
 - **Format**: Images with XML bounding boxes for ROI cropping
 - **Splits**: Stratified 70/15/15 train/val/test split (seed=42)
-  - **Train**: 37,496 samples (70%)
-  - **Validation**: 8,035 samples (15%)
-  - **Test**: 8,035 samples (15%)
+  - **Train**: 37,496 samples (70%) - used for training
+  - **Validation**: 8,035 samples (15%) - used for model selection, early stopping
+  - **Test**: 8,035 samples (15%) - held out for final evaluation only
 
-## Installation
+## Quick Start
+
+### Installation
 
 ```bash
-# Create virtual environment
+# Create virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
@@ -27,31 +29,33 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Quick Start
-
-### Training a Model
+### Running Training
 
 ```bash
-# Train with default config
+# Single experiment with default config
 python -m src.train.train --config configs/default.yaml
 
-# Train specific experiment
+# Run specific ablation experiment
 python -m src.train.train --config configs/ablation_full.yaml
 
 # Run all ablation experiments
 bash scripts/run_ablation.sh
 ```
 
-### Evaluating Models
+### Comparing Results
 
 ```bash
-# Evaluate on test set
+python scripts/compare_ablation.py
+```
+
+### Evaluating on Test Set
+
+After selecting your best model, evaluate on the held-out test set:
+
+```bash
 python scripts/evaluate_test.py \
   --checkpoint outputs/ablation_full/best_model.pt \
   --config outputs/ablation_full/config.yaml
-
-# Compare ablation results
-python scripts/compare_ablation.py
 ```
 
 ## Project Structure
@@ -60,7 +64,7 @@ python scripts/compare_ablation.py
 .
 ├── configs/              # YAML configuration files
 │   ├── default.yaml      # Default training config
-│   └── ablation_*.yaml   # Experiment configs
+│   └── ablation_*.yaml   # Transfer learning ablation configs
 ├── data/                 # Data directory
 │   ├── train.csv         # Training split
 │   ├── val.csv           # Validation split
@@ -68,32 +72,49 @@ python scripts/compare_ablation.py
 ├── src/
 │   ├── models/           # Model creation utilities
 │   ├── train/            # Training code
-│   └── eval/             # Evaluation metrics
+│   ├── eval/             # Evaluation metrics
+│   └── data/             # Data utilities
 ├── scripts/              # Utility scripts
 │   ├── run_ablation.sh   # Run all ablation experiments
-│   ├── compare_ablation.py  # Compare results
-│   └── evaluate_test.py  # Test set evaluation
+│   └── compare_ablation.py  # Compare experiment results
 └── outputs/              # Experiment outputs (models, metrics, plots)
 ```
 
-## Key Features
+## Transfer Learning Strategies
 
-- **Transfer Learning Ablation**: Compare scratch, head_only, last_block, and full fine-tuning
-- **Ordinal Regression**: CORAL-style ordinal head for distance-aware predictions
-- **Ensemble Methods**: Combine classification and ordinal models
-- **ROI Robustness**: Test model robustness to cropping strategies
-- **Comprehensive Metrics**: Accuracy, Macro-F1, per-class recall/precision, confusion matrices
+The codebase supports 4 transfer learning strategies for ablation study:
+
+1. **scratch**: Train from scratch (no pretrained weights)
+2. **head_only**: Freeze backbone, train only classifier head
+3. **last_block**: Freeze early layers, unfreeze last block(s)
+4. **full**: Fine-tune all parameters (default)
+
+Configure in `configs/*.yaml`:
+```yaml
+model:
+  pretrained: true
+  finetune_mode: full  # Options: head_only, last_block, full, scratch
+```
+
+## Metrics
+
+The evaluation tracks:
+- **Accuracy**: Overall classification accuracy
+- **Macro-F1**: Average F1 across all classes (balanced)
+- **Underweight Recall**: Recall for class 0 (BCS 3.25) - critical for welfare
+- **Per-class Recall/Precision**: Detailed per-class metrics
+- **Confusion Matrix**: Visual classification patterns
 
 ## Configuration
 
-Key config options:
+Key config options in `configs/default.yaml`:
 
 ```yaml
 model:
   backbone: efficientnet_b0
   num_classes: 5
   pretrained: true
-  finetune_mode: full  # Options: head_only, last_block, full, scratch
+  finetune_mode: full
 
 train:
   batch_size: 32
@@ -105,6 +126,8 @@ train:
     monitor: val_macro_f1
 ```
 
+See `docs/REFACTORING_SUMMARY.md` for detailed documentation of recent changes.
+
 ## Output Files
 
 Each experiment creates an output directory with:
@@ -113,6 +136,11 @@ Each experiment creates an output directory with:
 - `metrics.json`: Detailed evaluation metrics
 - `confusion_matrix.png`: Visualization of confusion matrix
 
-## Author
+## License
+
+[Add your license here]
+
+## Authors
 
 Paul Creavin - CS229 Machine Learning Project
+

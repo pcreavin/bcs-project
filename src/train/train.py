@@ -1,4 +1,4 @@
-"""Training script for BCS classification."""
+"""Training script for BCS classification with transfer learning support."""
 import argparse
 import os
 import shutil
@@ -18,7 +18,7 @@ from ..eval import evaluate, plot_confusion_matrix
 
 
 def get_device(cfg_device=None):
-    """Get device (cpu/cuda/mps)."""
+    """Get appropriate device (cpu/cuda/mps) based on config and availability."""
     if cfg_device in {"cpu", "cuda", "mps"}:
         return cfg_device
     if torch.cuda.is_available():
@@ -29,7 +29,7 @@ def get_device(cfg_device=None):
 
 
 def set_seed(seed=42):
-    """Set random seeds."""
+    """Set random seeds for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -38,7 +38,7 @@ def set_seed(seed=42):
 
 
 def get_optimizer(model, optimizer_name: str, lr: float, weight_decay: float = 1e-4):
-    """Create optimizer."""
+    """Create optimizer based on config."""
     if optimizer_name.lower() == "adamw":
         return optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     elif optimizer_name.lower() == "adam":
@@ -50,7 +50,7 @@ def get_optimizer(model, optimizer_name: str, lr: float, weight_decay: float = 1
 
 
 def get_scheduler(optimizer, scheduler_name: str, epochs: int):
-    """Create learning rate scheduler."""
+    """Create learning rate scheduler based on config."""
     if scheduler_name is None or scheduler_name == "null":
         return None
     elif scheduler_name.lower() == "cosine":
@@ -63,8 +63,11 @@ def get_scheduler(optimizer, scheduler_name: str, epochs: int):
 
 def main(cfg_path: str):
     """Main training function."""
+    # ---------- Load config ----------
     with open(cfg_path, "r") as f:
         cfg = yaml.safe_load(f)
+
+    # ---------- Read settings ----------
     data_cfg = cfg.get("data", {})
     model_cfg = cfg.get("model", {})
     train_cfg = cfg.get("train", {})
@@ -74,7 +77,6 @@ def main(cfg_path: str):
     val_csv = data_cfg.get("val", "data/val.csv")
     img_size = int(data_cfg.get("img_size", 224))
     do_aug = bool(data_cfg.get("do_aug", False))
-    crop_padding = data_cfg.get("crop_padding", None)
 
     backbone = model_cfg.get("backbone", "efficientnet_b0")
     num_classes = int(model_cfg.get("num_classes", 5))
@@ -100,9 +102,12 @@ def main(cfg_path: str):
     es_monitor = es_cfg.get("monitor", "val_macro_f1")
     es_mode = es_cfg.get("mode", "max")
 
+    # Output directory
     exp_name = cfg.get("exp_name", f"exp_{finetune_mode}_{time.strftime('%Y-%m-%d_%H-%M-%S')}")
     out_dir = cfg.get("out_dir", f"outputs/{exp_name}")
     os.makedirs(out_dir, exist_ok=True)
+
+    # Print config summary
     print("=" * 60)
     print("Training Configuration")
     print("=" * 60)
@@ -116,11 +121,10 @@ def main(cfg_path: str):
 
     set_seed(seed)
 
+    # ---------- Data ----------
     print("\nBuilding datasets...")
-    if crop_padding is not None:
-        print(f"ROI crop padding: {crop_padding} ({crop_padding*100:.1f}% margin on each side)")
-    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug, crop_padding=crop_padding)
-    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False, crop_padding=crop_padding)
+    ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
+    ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
     
     dl_tr = DataLoader(
         ds_tr,
@@ -140,6 +144,7 @@ def main(cfg_path: str):
     )
     print(f"Train samples: {len(ds_tr)} | Val samples: {len(ds_va)}")
 
+    # ---------- Model ----------
     print("\nCreating model...")
     model = create_model(
         backbone=backbone,
@@ -149,10 +154,12 @@ def main(cfg_path: str):
     )
     model.to(device)
 
+    # ---------- Optimizer / Loss / Scheduler ----------
     criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
     optimizer = get_optimizer(model, optimizer_name, lr, weight_decay)
     scheduler = get_scheduler(optimizer, scheduler_name, epochs)
 
+    # ---------- Early Stopping ----------
     early_stopping = None
     if es_enabled:
         early_stopping = EarlyStopping(
@@ -161,6 +168,7 @@ def main(cfg_path: str):
             mode=es_mode
         )
 
+    # ---------- Training Loop ----------
     print("\nStarting training...")
     print("-" * 60)
     
@@ -172,6 +180,7 @@ def main(cfg_path: str):
     class_names = eval_cfg.get("class_names", ["3.25", "3.5", "3.75", "4.0", "4.25"])
 
     for epoch in range(1, epochs + 1):
+        # Training phase
         model.train()
         running_loss = 0.0
         num_steps = 0
@@ -193,7 +202,10 @@ def main(cfg_path: str):
 
         train_loss = running_loss / max(1, num_steps)
 
+        # Validation phase
         eval_results = evaluate(model, dl_va, device, class_names=class_names)
+        
+        # Get monitored metric for early stopping
         if es_monitor == "val_acc":
             monitor_score = eval_results["acc"]
         elif es_monitor == "val_macro_f1":
@@ -201,21 +213,28 @@ def main(cfg_path: str):
         elif es_monitor == "val_underweight_recall":
             monitor_score = eval_results["underweight_recall"]
         else:
-            monitor_score = eval_results["acc"]
+            monitor_score = eval_results["acc"]  # Default fallback
 
+        # Print epoch results
         print(f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | "
               f"Val Acc: {eval_results['acc']:.4f} | "
               f"Val Macro-F1: {eval_results['macro_f1']:.4f} | "
               f"Underweight Recall: {eval_results['underweight_recall']:.4f}")
+
+        # Update best metrics and save checkpoint
         if eval_results["macro_f1"] > best_metrics["macro_f1"]:
             best_metrics = eval_results.copy()
             torch.save(model.state_dict(), os.path.join(out_dir, "best_model.pt"))
             print(f"  -> New best model saved (Macro-F1: {best_metrics['macro_f1']:.4f})")
+
+        # Learning rate scheduling
         if scheduler is not None:
             scheduler.step()
             current_lr = optimizer.param_groups[0]["lr"]
             if epoch % 5 == 0:
                 print(f"  Learning rate: {current_lr:.6f}")
+
+        # Early stopping check
         if early_stopping is not None:
             if early_stopping(monitor_score):
                 print(f"\nEarly stopping triggered at epoch {epoch}")
@@ -224,9 +243,12 @@ def main(cfg_path: str):
 
         print("-" * 60)
 
+    # ---------- Final Evaluation and Saving ----------
     print("\nFinal evaluation on best model...")
     model.load_state_dict(torch.load(os.path.join(out_dir, "best_model.pt")))
     final_eval = evaluate(model, dl_va, device, class_names=class_names)
+    
+    # Save confusion matrix
     if eval_cfg.get("save_confusion_matrix", True):
         cm_path = os.path.join(out_dir, "confusion_matrix.png")
         plot_confusion_matrix(
