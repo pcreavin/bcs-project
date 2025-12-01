@@ -1,0 +1,242 @@
+[
+  {
+    "sample_num": 0,
+    "filename": "gradcam_sample_000_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.25/YM_1630_2.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_000_class_1.png"
+  },
+  {
+    "sample_num": 1,
+    "filename": "gradcam_sample_001_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.75/GS_724_1.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_001_class_1.png"
+  },
+  {
+    "sample_num": 2,
+    "filename": "gradcam_sample_002_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.75/GS_1719_1.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_002_class_2.png"
+  },
+  {
+    "sample_num": 3,
+    "filename": "gradcam_sample_003_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/4.0/GS_2649_5.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_003_class_0.png"
+  },
+  {
+    "sample_num": 4,
+    "filename": "gradcam_sample_004_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.5/GS_1783_7.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_004_class_2.png"
+  },
+  {
+    "sample_num": 5,
+    "filename": "gradcam_sample_005_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/4.0/GS_2546_7.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_005_class_2.png"
+  },
+  {
+    "sample_num": 6,
+    "filename": "gradcam_sample_006_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.75/GS_2653_2.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_006_class_2.png"
+  },
+  {
+    "sample_num": 7,
+    "filename": "gradcam_sample_007_class_4.png",
+    "true_class": 4,
+    "true_bcs": "4.25",
+    "image_path": "data/raw/dataset/4.0/YM_697_2.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_007_class_4.png"
+  },
+  {
+    "sample_num": 8,
+    "filename": "gradcam_sample_008_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.25/R-i1037.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_008_class_1.png"
+  },
+  {
+    "sample_num": 9,
+    "filename": "gradcam_sample_009_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.75/GS_132_16.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_009_class_2.png"
+  },
+  {
+    "sample_num": 10,
+    "filename": "gradcam_sample_010_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.5/GS_1108_5.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_010_class_1.png"
+  },
+  {
+    "sample_num": 11,
+    "filename": "gradcam_sample_011_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.5/GS_1763_2.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_011_class_1.png"
+  },
+  {
+    "sample_num": 12,
+    "filename": "gradcam_sample_012_class_3.png",
+    "true_class": 3,
+    "true_bcs": "4.0",
+    "image_path": "data/raw/dataset/3.75/R-i8319.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_012_class_3.png"
+  },
+  {
+    "sample_num": 13,
+    "filename": "gradcam_sample_013_class_3.png",
+    "true_class": 3,
+    "true_bcs": "4.0",
+    "image_path": "data/raw/dataset/4.25/GS_1564_6.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_013_class_3.png"
+  },
+  {
+    "sample_num": 14,
+    "filename": "gradcam_sample_014_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/3.25/L-i1122.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_014_class_0.png"
+  },
+  {
+    "sample_num": 15,
+    "filename": "gradcam_sample_015_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.25/YM_1591_5.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_015_class_1.png"
+  },
+  {
+    "sample_num": 16,
+    "filename": "gradcam_sample_016_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/3.5/YM_634_1.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_016_class_0.png"
+  },
+  {
+    "sample_num": 17,
+    "filename": "gradcam_sample_017_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/3.75/GS_178_9.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_017_class_0.png"
+  },
+  {
+    "sample_num": 18,
+    "filename": "gradcam_sample_018_class_3.png",
+    "true_class": 3,
+    "true_bcs": "4.0",
+    "image_path": "data/raw/dataset/4.0/GS_2148_5.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_018_class_3.png"
+  },
+  {
+    "sample_num": 19,
+    "filename": "gradcam_sample_019_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.25/YM_767_4.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_019_class_1.png"
+  },
+  {
+    "sample_num": 20,
+    "filename": "gradcam_sample_020_class_1.png",
+    "true_class": 1,
+    "true_bcs": "3.5",
+    "image_path": "data/raw/dataset/3.5/R-i999.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_020_class_1.png"
+  },
+  {
+    "sample_num": 21,
+    "filename": "gradcam_sample_021_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.5/L-i3169.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_021_class_2.png"
+  },
+  {
+    "sample_num": 22,
+    "filename": "gradcam_sample_022_class_3.png",
+    "true_class": 3,
+    "true_bcs": "4.0",
+    "image_path": "data/raw/dataset/3.25/GS_1106_1.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_022_class_3.png"
+  },
+  {
+    "sample_num": 23,
+    "filename": "gradcam_sample_023_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/3.75/YM_651_6.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_023_class_0.png"
+  },
+  {
+    "sample_num": 24,
+    "filename": "gradcam_sample_024_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/3.5/R-i4662.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_024_class_0.png"
+  },
+  {
+    "sample_num": 25,
+    "filename": "gradcam_sample_025_class_4.png",
+    "true_class": 4,
+    "true_bcs": "4.25",
+    "image_path": "data/raw/dataset/3.5/R-i1545.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_025_class_4.png"
+  },
+  {
+    "sample_num": 26,
+    "filename": "gradcam_sample_026_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/3.75/YM_1351_2.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_026_class_2.png"
+  },
+  {
+    "sample_num": 27,
+    "filename": "gradcam_sample_027_class_3.png",
+    "true_class": 3,
+    "true_bcs": "4.0",
+    "image_path": "data/raw/dataset/3.25/L-i6901.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_027_class_3.png"
+  },
+  {
+    "sample_num": 28,
+    "filename": "gradcam_sample_028_class_0.png",
+    "true_class": 0,
+    "true_bcs": "3.25",
+    "image_path": "data/raw/dataset/4.25/GS_1819_10.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_028_class_0.png"
+  },
+  {
+    "sample_num": 29,
+    "filename": "gradcam_sample_029_class_2.png",
+    "true_class": 2,
+    "true_bcs": "3.75",
+    "image_path": "data/raw/dataset/4.25/GS_303_8.jpg",
+    "gradcam_path": "outputs/roi_robustness_padding_05/gradcam_incorrect/gradcam_sample_029_class_2.png"
+  }
+]
