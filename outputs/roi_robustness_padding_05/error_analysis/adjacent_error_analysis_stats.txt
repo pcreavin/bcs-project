@@ -1,0 +1,10 @@
+ADJACENT vs NON-ADJACENT ERROR ANALYSIS
+============================================================
+Total Errors: 344
+Adjacent Errors (±1 class): 249 (72.38%)
+Non-Adjacent Errors (>1 class): 95 (27.62%)
+
+Error Distance Breakdown:
+  Distance 1: 249 errors (72.38%)
+  Distance 2: 81 errors (23.55%)
+  Distance 3: 14 errors (4.07%)

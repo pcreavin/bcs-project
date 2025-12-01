@@ -1,0 +1,11 @@
+true_label,predicted_label,confidence,image_path,is_correct,true_class_name,pred_class_name
+1,2,0.9692235,data\raw\dataset\3.5\YM_146_2.jpg,False,3.5,3.75
+1,2,0.93325716,data\raw\dataset\3.5\GS_1881_2.jpg,False,3.5,3.75
+2,3,0.91777563,data\raw\dataset\3.75\GS_2741_3.jpg,False,3.75,4.0
+4,3,0.9031558,data\raw\dataset\4.25\YM_876_7.jpg,False,4.25,4.0
+3,2,0.8959279,data\raw\dataset\4.0\YM_1447_1.jpg,False,4.0,3.75
+3,4,0.89319956,data\raw\dataset\4.0\GS_2123_3.jpg,False,4.0,4.25
+2,0,0.884854,data\raw\dataset\3.75\YM_11_1.jpg,False,3.75,3.25
+4,3,0.88420767,data\raw\dataset\4.25\GS_1599_1.jpg,False,4.25,4.0
+3,4,0.88043356,data\raw\dataset\4.0\GS_1711_2.jpg,False,4.0,4.25
+4,3,0.88031197,data\raw\dataset\4.25\GS_2132_5.jpg,False,4.25,4.0
