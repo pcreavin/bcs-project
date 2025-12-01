@@ -15,11 +15,12 @@ class BcsDataset(Dataset):
     """
     def __init__(self, csv_path, img_size=320, train=True, do_aug=False):
         self.df = pd.read_csv(csv_path)
-        self.img_size = img_size
+        # Ensure img_size is an integer
+        self.img_size = int(img_size)
         self.train = train
         self.do_aug = do_aug
 
-        tf = [A.Resize(img_size, img_size)]
+        tf = [A.Resize(self.img_size, self.img_size)]
         if train and do_aug:
             tf += [A.HorizontalFlip(p=0.5), A.Rotate(limit=10, p=0.5)]
         tf += [A.Normalize(), ToTensorV2()]

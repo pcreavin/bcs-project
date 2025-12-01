@@ -75,7 +75,9 @@ def main(cfg_path: str):
 
     train_csv = data_cfg.get("train", "data/train.csv")
     val_csv = data_cfg.get("val", "data/val.csv")
-    img_size = int(data_cfg.get("img_size", 224))
+    # Ensure img_size is read correctly from config
+    img_size_raw = data_cfg.get("img_size", 224)
+    img_size = int(img_size_raw) if img_size_raw is not None else 224
     do_aug = bool(data_cfg.get("do_aug", False))
 
     backbone = model_cfg.get("backbone", "efficientnet_b0")
@@ -113,7 +115,7 @@ def main(cfg_path: str):
     print("=" * 60)
     print(f"Config: {cfg_path}")
     print(f"Device: {device} | Batch size: {bs} | Epochs: {epochs}")
-    print(f"Backbone: {backbone} | Finetune mode: {finetune_mode}")
+    print(f"Image size: {img_size} | Backbone: {backbone} | Finetune mode: {finetune_mode}")
     print(f"Pretrained: {pretrained} | Learning rate: {lr}")
     print(f"Early stopping: {es_enabled} (patience={es_patience}, monitor={es_monitor})")
     print(f"Output directory: {out_dir}")
@@ -123,15 +125,28 @@ def main(cfg_path: str):
 
     # ---------- Data ----------
     print("\nBuilding datasets...")
+    print(f"  Using image size: {img_size}x{img_size}")
     ds_tr = BcsDataset(train_csv, img_size=img_size, train=True, do_aug=do_aug)
     ds_va = BcsDataset(val_csv, img_size=img_size, train=False, do_aug=False)
+    # Verify dataset is using correct size
+    sample_img, _ = ds_tr[0]
+    actual_size = sample_img.shape[-1]
+    print(f"  Verified dataset output size: {actual_size}x{actual_size}")
+    if actual_size != img_size:
+        raise ValueError(f"Dataset size mismatch: expected {img_size}, got {actual_size}")
+    
+    # persistent_workers requires num_workers > 0
+    if num_workers > 0:
+        persistent_workers = bool(train_cfg.get("persistent_workers", False))
+    else:
+        persistent_workers = False
     
     dl_tr = DataLoader(
         ds_tr,
         batch_size=bs,
         shuffle=True,
         num_workers=num_workers,
-        persistent_workers=train_cfg.get("persistent_workers", False),
+        persistent_workers=persistent_workers,
         prefetch_factor=train_cfg.get("prefetch_factor", 2) if num_workers > 0 else None
     )
     dl_va = DataLoader(
@@ -139,18 +154,21 @@ def main(cfg_path: str):
         batch_size=bs,
         shuffle=False,
         num_workers=num_workers,
-        persistent_workers=train_cfg.get("persistent_workers", False),
+        persistent_workers=persistent_workers,
         prefetch_factor=train_cfg.get("prefetch_factor", 2) if num_workers > 0 else None
     )
     print(f"Train samples: {len(ds_tr)} | Val samples: {len(ds_va)}")
 
     # ---------- Model ----------
     print("\nCreating model...")
+    if pretrained:
+        print("  (Downloading pretrained weights if needed - this may take a few minutes on first run)")
     model = create_model(
         backbone=backbone,
         num_classes=num_classes,
         pretrained=pretrained,
-        finetune_mode=finetune_mode
+        finetune_mode=finetune_mode,
+        img_size=img_size
     )
     model.to(device)
 

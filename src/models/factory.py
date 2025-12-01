@@ -8,7 +8,8 @@ def create_model(
     backbone: str,
     num_classes: int,
     pretrained: bool = True,
-    finetune_mode: Literal["head_only", "last_block", "full", "scratch"] = "full"
+    finetune_mode: Literal["head_only", "last_block", "full", "scratch"] = "full",
+    img_size: int = None
 ) -> nn.Module:
     """
     Create model with specified transfer learning strategy.
@@ -22,6 +23,8 @@ def create_model(
             - "head_only": Freeze backbone, train only classifier head
             - "last_block": Freeze early layers, unfreeze last block(s)
             - "full": Fine-tune all parameters
+        img_size: Input image size (height/width). If None, uses model default.
+                  Required for some models like Swin Transformer to match dataset size.
     
     Returns:
         Configured model with appropriate parameters frozen/unfrozen
@@ -29,7 +32,17 @@ def create_model(
     if finetune_mode == "scratch":
         pretrained = False
     
-    model = timm.create_model(backbone, pretrained=pretrained, num_classes=num_classes)
+    # For most timm models, input size is either hardcoded in the architecture
+    # (e.g., Swin models have _224 in their name) or not configurable via img_size parameter.
+    # The dataset must match the model's expected size (typically 224 for pretrained models).
+    # We don't pass img_size to timm.create_model as most models don't accept it.
+    model_kwargs = {"pretrained": pretrained, "num_classes": num_classes}
+    
+    # Note: Some models might support input_size or img_size, but it's model-specific.
+    # For now, we rely on the dataset producing the correct size (224x224 for most pretrained models).
+    # If a model needs a different size, it should be specified in the model name or handled separately.
+    
+    model = timm.create_model(backbone, **model_kwargs)
     
     if finetune_mode == "head_only":
         # Freeze all layers except classifier
