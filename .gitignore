@@ -28,3 +28,8 @@ scripts/cache_crops224.py
 scripts/split_manifest.py
 scripts/run_gcp_models.sh
 scripts/export_results_latex.py
+.DS_Store
+src/.DS_Store
+outputs/.DS_Store
+.vscode
+docs/*
