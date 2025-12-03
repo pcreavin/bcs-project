@@ -17,3 +17,14 @@ scripts/
 scripts/__pycache__/
 .venv/
 outputs/*.png
+scripts/check_device.py
+scripts/check_models.py
+scripts/check_predictions.py
+scripts/test_model_load.py
+scripts/extract_rar.py
+scripts/setup_venv.ps1
+scripts/activate_cmd.bat
+scripts/cache_crops224.py
+scripts/split_manifest.py
+scripts/run_gcp_models.sh
+scripts/export_results_latex.py
